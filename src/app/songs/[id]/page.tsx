@@ -11,6 +11,8 @@ import { GetArtistSongsResponse, GetSongByIdResponse, GetSongSuggestionsByIdResp
 import { decodeHtmlEntities, decodeHtmlEntitiesInJson, formatDuration } from '@/lib/utils'
 import MainHero from '../_components/MainHero'
 
+export const runtime = 'edge'
+
 const fetchSongCached = cache(async (id: string) => {
   try {
     const req = await getSongById({ id: id })
