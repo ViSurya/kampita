@@ -11,7 +11,7 @@
 //   GetAlbumResponse,
 // } from "./fetchTypes";
 
-const API_URL = 'https://kampita-api.vercel.app/api';
+const API_URL = process.env.API_URL;
 
 interface ApiResponse<T> {
   status: string;
