@@ -335,8 +335,8 @@ export function Player() {
               <Image
                 src={currentTrack.previewImage}
                 alt={currentTrack.name}
-                width={50}
-                height={50}
+                width={500}
+                height={500}
                 className="w-full max-w-sm mx-auto aspect-square object-cover rounded-lg shadow-lg mb-4"
               />
             )}
