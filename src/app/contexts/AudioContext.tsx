@@ -89,10 +89,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
+      setIsPlaying(false);
     } else if (currentTrack) {
+      if (audioRef.current.ended) {
+        audioRef.current.currentTime = 0;
+      }
       audioRef.current.play();
+      setIsPlaying(true);
     }
-    setIsPlaying(!isPlaying);
   }, [isPlaying, currentTrack]);
 
   const seekTo = useCallback((time: number) => {
@@ -117,9 +121,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       return;
     }
-
+  
     let nextTrack: Track | null = null;
-
+  
     if (queue.length > 0) {
       nextTrack = isShuffle ? queue[Math.floor(Math.random() * queue.length)] : queue[0];
       setQueue(prev => prev.filter(track => track.id !== nextTrack!.id));
@@ -129,12 +133,16 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       nextTrack = allTracks[0];
       setPlayHistory([]);
     }
-
+  
     if (nextTrack) {
       setCurrentTrack(nextTrack);
     } else {
-      setCurrentTrack(null);
+      // If there's no next track, just stop playing but keep the current track
       setIsPlaying(false);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
     }
   }, [queue, repeatMode, isShuffle, currentTrack, playHistory, addToPlayHistory]);
 
