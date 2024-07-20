@@ -22,14 +22,14 @@ const fetchSongCached = async (id: string) => {
     console.log('Song fetched successfully');
     return response.data?.[0]
   } catch (error) {
-    console.error('Error fetching song with lyrics:', error);
+    // console.error('Error fetching song with lyrics:', error);
     try {
       const req = await getSongById({ id: id, lyrics: false })
       const response: GetSongByIdResponse = await decodeHtmlEntitiesInJson(req)
       console.log('Song fetched successfully without lyrics');
       return response.data?.[0]
     } catch (fallbackError) {
-      console.error('Error fetching song without lyrics:', fallbackError);
+      // console.error('Error fetching song without lyrics:', fallbackError);
       return null;
     }
   }
