@@ -14,7 +14,7 @@ import MainHero from '../_components/MainHero'
 
 export const runtime = 'edge'
 
-const fetchSongCached = cache(async (id: string) => {
+const fetchSongCached = async (id: string) => {
   console.log(`Fetching song with id: ${id}`);
   try {
     const req = await getSongById({ id: id })
@@ -33,7 +33,7 @@ const fetchSongCached = cache(async (id: string) => {
       return null;
     }
   }
-})
+}
 
 function createArtistProps(song: NonNullable<GetSongByIdResponse['data']>[0]): SongCardProps[] {
   const uniqueArtists = new Map<string, SongCardProps>();
