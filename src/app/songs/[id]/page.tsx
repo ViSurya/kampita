@@ -189,23 +189,3 @@ export default async function Page({ params }: { params: { id: string } }) {
   }
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
-  console.log(`Generating metadata for song id: ${params.id}`);
-  try {
-    const song = await fetchSongCached(params.id)
-    if (!song) {
-      console.log('Song not found, returning empty metadata');
-      return {}
-    }
-    return {
-      title: song?.name || params.id,
-      description: `download ${song?.name} online for free`,
-      openGraph: {
-        images: song?.image?.[2].url ? [song.image[2].url] : []
-      }
-    }
-  } catch (error) {
-    console.error('Error generating metadata:', error);
-    return {}
-  }
-}
