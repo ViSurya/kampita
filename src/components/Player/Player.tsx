@@ -54,6 +54,7 @@ const PlayerControls = React.memo(() => {
   const handleShuffleToggle = () => {
     toggleShuffle();
     toast({
+      duration: 1500,
       title: "Shuffle",
       description: isShuffle ? "Shuffle disabled" : "Shuffle enabled",
     });
@@ -74,6 +75,7 @@ const PlayerControls = React.memo(() => {
         break;
     }
     toast({
+      duration: 1500,
       title: "Repeat Mode",
       description: message,
     });

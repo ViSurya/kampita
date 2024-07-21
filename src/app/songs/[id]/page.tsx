@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { PlaceHolderImages } from '@/lib/config'
 import { getArtistSongs, getSongById, getSongSuggestionsById } from '@/lib/fetch'
 import { GetArtistSongsResponse, GetSongByIdResponse, GetSongSuggestionsByIdResponse } from '@/lib/fetchTypes'
 import { decodeHtmlEntities, decodeHtmlEntitiesInJson, formatDuration } from '@/lib/utils'
@@ -14,7 +13,7 @@ import MainHero from '../_components/MainHero'
 
 export const runtime = 'edge'
 
-const fetchSongCached = async (id: string) => {
+const fetchSongCached = cache(async (id: string) => {
   // console.log(`Fetching song with id: ${id}`);
   try {
     const req = await getSongById({ id: id })
@@ -33,7 +32,7 @@ const fetchSongCached = async (id: string) => {
       return null;
     }
   }
-}
+})
 
 function createArtistProps(song: NonNullable<GetSongByIdResponse['data']>[0]): SongCardProps[] {
   const uniqueArtists = new Map<string, SongCardProps>();
@@ -56,36 +55,40 @@ function createArtistProps(song: NonNullable<GetSongByIdResponse['data']>[0]): S
   return Array.from(uniqueArtists.values());
 }
 
-async function createSongSuggestions(songId: string) {
-  // console.log(`Fetching song suggestions for id: ${songId}`);
-  try {
-    const suggestions = await getSongSuggestionsById({ id: songId, limit: 10 });
-    const response: GetSongSuggestionsByIdResponse = await decodeHtmlEntitiesInJson(suggestions);
-    // console.log('Song suggestions fetched successfully');
-    return response.data?.map(song => ({
-      id: song.id,
-      name: song.name,
-      artists: song.artists?.all,
-      images: song.image,
-      type: 'song' as const,
-      song_file: song.downloadUrl?.[2].url
-    })) || [];
-  } catch (error) {
-    // console.log('Error fetching song suggestions:', error);
-    return [];
-  }
-}
+const createSongSuggestions = cache(async (songId: string) => {
+  const suggestions = await getSongSuggestionsById({ id: songId, limit: 10 });
+  const response: GetSongSuggestionsByIdResponse = await decodeHtmlEntitiesInJson(suggestions);
+  return response.data?.map(song => ({
+    id: song.id,
+    name: song.name,
+    artists: song.artists?.all,
+    images: song.image,
+    type: 'song' as const,
+    song_file: song.downloadUrl?.[2].url
+  })) || [];
+})
 
-async function createArtistSongs(ArtistId: string) {
-  // console.log(`Fetching artist songs for id: ${ArtistId}`);
-  try {
-    const suggestions = await getArtistSongs({ id: ArtistId });
+
+// async function createSongSuggestions(songId: string) {
+//   const suggestions = await getSongSuggestionsById({ id: songId, limit: 10 });
+//   const response: GetSongSuggestionsByIdResponse = await decodeHtmlEntitiesInJson(suggestions);
+//   return response.data?.map(song => ({
+//     id: song.id,
+//     name: song.name,
+//     artists: song.artists?.all,
+//     images: song.image,
+//     type: 'song' as const,
+//     song_file: song.downloadUrl?.[2].url
+//   })) || [];
+// }
+
+
+const createArtistSongs = cache(async (ArtistId: string) => {
+  const suggestions = await getArtistSongs({ id: ArtistId });
     const response: GetArtistSongsResponse = await decodeHtmlEntitiesInJson(suggestions);
     if (!response.data || !Array.isArray(response.data.songs)) {
-      // console.log('Invalid response structure for artist songs');
       return [];
     }
-    // console.log('Artist songs fetched successfully');
     return response.data.songs.map(song => ({
       id: song.id,
       name: song.name,
@@ -94,11 +97,25 @@ async function createArtistSongs(ArtistId: string) {
       type: 'song' as const,
       song_file: song.downloadUrl?.[2].url
     }));
-  } catch (error) {
-    // console.log('Error fetching artist songs:', error);
-    return [];
-  }
-}
+})
+
+// async function createArtistSongs(ArtistId: string) {
+
+//     const suggestions = await getArtistSongs({ id: ArtistId });
+//     const response: GetArtistSongsResponse = await decodeHtmlEntitiesInJson(suggestions);
+//     if (!response.data || !Array.isArray(response.data.songs)) {
+//       return [];
+//     }
+//     return response.data.songs.map(song => ({
+//       id: song.id,
+//       name: song.name,
+//       artists: song.artists?.all || [],
+//       images: song.image,
+//       type: 'song' as const,
+//       song_file: song.downloadUrl?.[2].url
+//     }));
+//   }
+
 
 export default async function Page({ params }: { params: { id: string } }) {
   // console.log(`Rendering page for song id: ${params.id}`);
@@ -194,3 +211,16 @@ export default async function Page({ params }: { params: { id: string } }) {
   }
 }
 
+
+
+export async function generateMetadata({params}: {params: {id:string}}) {
+  const song = await fetchSongCached(params.id)
+  if(!song) {
+    return {}
+  }
+  
+  return {
+    title: song.name,
+    
+  }
+}
