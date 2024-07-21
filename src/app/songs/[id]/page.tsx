@@ -15,21 +15,21 @@ import MainHero from '../_components/MainHero'
 export const runtime = 'edge'
 
 const fetchSongCached = async (id: string) => {
-  console.log(`Fetching song with id: ${id}`);
+  // console.log(`Fetching song with id: ${id}`);
   try {
     const req = await getSongById({ id: id })
     const response: GetSongByIdResponse = await decodeHtmlEntitiesInJson(req)
-    console.log('Song fetched successfully');
+    // console.log('Song fetched successfully');
     return response.data?.[0]
   } catch (error) {
    console.log('Error fetching song with lyrics:', error);
     try {
       const req = await getSongById({ id: id, lyrics: false })
       const response: GetSongByIdResponse = await decodeHtmlEntitiesInJson(req)
-      console.log('Song fetched successfully without lyrics');
+      // console.log('Song fetched successfully without lyrics');
       return response.data?.[0]
     } catch (fallbackError) {
-      console.log('Error fetching song without lyrics:', fallbackError);
+      // console.log('Error fetching song without lyrics:', fallbackError);
       return null;
     }
   }
@@ -57,11 +57,11 @@ function createArtistProps(song: NonNullable<GetSongByIdResponse['data']>[0]): S
 }
 
 async function createSongSuggestions(songId: string) {
-  console.log(`Fetching song suggestions for id: ${songId}`);
+  // console.log(`Fetching song suggestions for id: ${songId}`);
   try {
     const suggestions = await getSongSuggestionsById({ id: songId, limit: 10 });
     const response: GetSongSuggestionsByIdResponse = await decodeHtmlEntitiesInJson(suggestions);
-    console.log('Song suggestions fetched successfully');
+    // console.log('Song suggestions fetched successfully');
     return response.data?.map(song => ({
       id: song.id,
       name: song.name,
@@ -71,21 +71,21 @@ async function createSongSuggestions(songId: string) {
       song_file: song.downloadUrl?.[2].url
     })) || [];
   } catch (error) {
-    console.log('Error fetching song suggestions:', error);
+    // console.log('Error fetching song suggestions:', error);
     return [];
   }
 }
 
 async function createArtistSongs(ArtistId: string) {
-  console.log(`Fetching artist songs for id: ${ArtistId}`);
+  // console.log(`Fetching artist songs for id: ${ArtistId}`);
   try {
     const suggestions = await getArtistSongs({ id: ArtistId });
     const response: GetArtistSongsResponse = await decodeHtmlEntitiesInJson(suggestions);
     if (!response.data || !Array.isArray(response.data.songs)) {
-      console.log('Invalid response structure for artist songs');
+      // console.log('Invalid response structure for artist songs');
       return [];
     }
-    console.log('Artist songs fetched successfully');
+    // console.log('Artist songs fetched successfully');
     return response.data.songs.map(song => ({
       id: song.id,
       name: song.name,
@@ -95,17 +95,17 @@ async function createArtistSongs(ArtistId: string) {
       song_file: song.downloadUrl?.[2].url
     }));
   } catch (error) {
-    console.log('Error fetching artist songs:', error);
+    // console.log('Error fetching artist songs:', error);
     return [];
   }
 }
 
 export default async function Page({ params }: { params: { id: string } }) {
-  console.log(`Rendering page for song id: ${params.id}`);
+  // console.log(`Rendering page for song id: ${params.id}`);
   try {
     const song = await fetchSongCached(params.id)
     if (!song) {
-      console.log('Song not found, returning 404');
+      // console.log('Song not found, returning 404');
       notFound()
     }
 
