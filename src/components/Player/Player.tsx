@@ -1,3 +1,4 @@
+// Player.tsx
 "use client";
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
@@ -48,7 +49,7 @@ const PlayerControls = React.memo(() => {
 
   return (
     <div className="flex items-center justify-center gap-4">
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -65,7 +66,7 @@ const PlayerControls = React.memo(() => {
         </Tooltip>
       </TooltipProvider>
 
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button 
@@ -81,7 +82,7 @@ const PlayerControls = React.memo(() => {
         </Tooltip>
       </TooltipProvider>
 
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button 
@@ -104,7 +105,7 @@ const PlayerControls = React.memo(() => {
         </Tooltip>
       </TooltipProvider>
 
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button 
@@ -120,7 +121,7 @@ const PlayerControls = React.memo(() => {
         </Tooltip>
       </TooltipProvider>
 
-      <TooltipProvider>
+      <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -133,7 +134,7 @@ const PlayerControls = React.memo(() => {
           </TooltipTrigger>
           <TooltipContent>
             {repeatMode === "off"
-              ? "Enable Repeat"
+              ? "Enable Repeat All"
               : repeatMode === "all"
               ? "Repeat One"
               : "Disable Repeat"}
@@ -264,7 +265,7 @@ const ProgressSlider = React.memo(() => {
   );
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild className="h-1">
           <Slider
