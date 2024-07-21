@@ -1,4 +1,3 @@
-// app/contexts/AudioContext.tsx
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
@@ -54,28 +53,33 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isShuffle, setIsShuffle] = useState(false);
   const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
 
-  useEffect(() => {
+  const saveState = useCallback(() => {
+    const stateToSave = {
+      volume,
+      queue,
+      playHistory,
+      isShuffle,
+      repeatMode,
+      currentTrack,
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [volume, queue, playHistory, isShuffle, repeatMode, currentTrack]);
+
+  const restoreState = useCallback(() => {
     const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (savedState) {
       const parsedState = JSON.parse(savedState);
-      setVolume(parsedState.volume);
-      setQueue(parsedState.queue);
-      setIsShuffle(parsedState.isShuffle);
-      setRepeatMode(parsedState.repeatMode);
+      setVolume(parsedState.volume || 1);
+      setQueue(parsedState.queue || []);
+      setPlayHistory(parsedState.playHistory || []);
+      setIsShuffle(parsedState.isShuffle || false);
+      setRepeatMode(parsedState.repeatMode || 'off');
+      setCurrentTrack(parsedState.currentTrack || null);
     }
   }, []);
 
   useEffect(() => {
-    const stateToSave = {
-      volume,
-      queue,
-      isShuffle,
-      repeatMode,
-    };
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
-  }, [volume, queue, isShuffle, repeatMode]);
-
-  useEffect(() => {
+    restoreState();
     audioRef.current = new Audio();
     return () => {
       if (audioRef.current) {
@@ -83,7 +87,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audioRef.current = null;
       }
     };
-  }, []);
+  }, [restoreState]);
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current) return;
@@ -94,10 +98,11 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (audioRef.current.ended) {
         audioRef.current.currentTime = 0;
       }
-      audioRef.current.play();
+      audioRef.current.play().catch(console.error);
       setIsPlaying(true);
     }
-  }, [isPlaying, currentTrack]);
+    saveState();
+  }, [isPlaying, currentTrack, saveState]);
 
   const seekTo = useCallback((time: number) => {
     if (audioRef.current) {
@@ -107,7 +112,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addToPlayHistory = useCallback((track: Track) => {
     setPlayHistory(prev => [track, ...prev].slice(0, MAX_HISTORY_LENGTH));
-  }, []);
+    saveState();
+  }, [saveState]);
 
   const playNext = useCallback(() => {
     if (currentTrack) {
@@ -117,7 +123,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (repeatMode === 'one') {
       if (audioRef.current) {
         audioRef.current.currentTime = 0;
-        audioRef.current.play();
+        audioRef.current.play().catch(console.error);
       }
       return;
     }
@@ -137,14 +143,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (nextTrack) {
       setCurrentTrack(nextTrack);
     } else {
-      // If there's no next track, just stop playing but keep the current track
       setIsPlaying(false);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
     }
-  }, [queue, repeatMode, isShuffle, currentTrack, playHistory, addToPlayHistory]);
+    saveState();
+  }, [queue, repeatMode, isShuffle, currentTrack, playHistory, addToPlayHistory, saveState]);
 
   const playPrevious = useCallback(() => {
     if (currentTime > 3 && audioRef.current) {
@@ -165,26 +171,31 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCurrentTrack(allTracks[allTracks.length - 1]);
       setQueue([]);
     }
-  }, [currentTime, playHistory, currentTrack, queue, repeatMode]);
+    saveState();
+  }, [currentTime, playHistory, currentTrack, queue, repeatMode, saveState]);
 
   const addToQueue = useCallback((track: Track) => {
     setQueue(prev => [...prev, track]);
-  }, []);
+    saveState();
+  }, [saveState]);
 
   const removeFromQueue = useCallback((trackId: string) => {
     setQueue(prev => prev.filter(track => track.id !== trackId));
-  }, []);
+    saveState();
+  }, [saveState]);
 
   const handleSetVolume = useCallback((newVolume: number) => {
     if (audioRef.current) {
       audioRef.current.volume = newVolume;
     }
     setVolume(newVolume);
-  }, []);
+    saveState();
+  }, [saveState]);
 
   const toggleShuffle = useCallback(() => {
     setIsShuffle(prev => !prev);
-  }, []);
+    saveState();
+  }, [saveState]);
 
   const toggleRepeat = useCallback(() => {
     setRepeatMode(prev => {
@@ -192,7 +203,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (prev === 'all') return 'one';
       return 'off';
     });
-  }, []);
+    saveState();
+  }, [saveState]);
 
   const playTrack = useCallback((index: number) => {
     if (index >= 0 && index < queue.length) {
@@ -202,15 +214,17 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       setCurrentTrack(trackToPlay);
       setQueue(prev => prev.filter(track => track.id !== trackToPlay.id));
+      saveState();
     }
-  }, [queue, currentTrack, addToPlayHistory]);
+  }, [queue, currentTrack, addToPlayHistory, saveState]);
 
   const setCurrentTrackAndUpdateHistory = useCallback((track: Track | null) => {
     if (currentTrack) {
       addToPlayHistory(currentTrack);
     }
     setCurrentTrack(track);
-  }, [currentTrack, addToPlayHistory]);
+    saveState();
+  }, [currentTrack, addToPlayHistory, saveState]);
 
   useEffect(() => {
     if (!audioRef.current) return;
