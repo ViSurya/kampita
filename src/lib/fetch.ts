@@ -1,17 +1,6 @@
-// import {
-//   GlobalSearchResponse,
-//   GetSongByIdResponse,
-//   SearchAlbumsResponse,
-//   SearchArtistsResponse,
-//   SearchPlaylistsResponse,
-//   SearchSongsResponse,
-//   GetSongByLinkResponse,
-//   GetLyricsByIdResponse,
-//   GetSongSuggestionsByIdResponse,
-//   GetAlbumResponse,
-// } from "./fetchTypes";
+import { secrets } from "./config";
 
-const API_URL = 'https://kampita-api.vercel.app/api';
+const API_URL = secrets.API_URL;
 
 interface ApiResponse<T> {
   status: string;

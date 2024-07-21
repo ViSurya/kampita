@@ -20,6 +20,16 @@ type SiteConfigType = {
     };
 };
 
+type PlaceHolderImagesType = {
+    artist: string;
+    album: string;
+    playlist: string;
+    radio: string;
+    song: string;
+    user: string;
+};
+
+
 const SiteConfig: SiteConfigType = {
     siteName: 'Kampita',
     tagLine: 'Kampita - Feel the Beat, Free the Music',
@@ -53,15 +63,6 @@ const SiteConfig: SiteConfigType = {
     }
 };
 
-type PlaceHolderImagesType = {
-    artist: string;
-    album: string;
-    playlist: string;
-    radio: string;
-    song: string;
-    user: string;
-};
-
 const PlaceHolderImages: PlaceHolderImagesType = {
     artist: '/images/placeholder/artist.jpg',
     album: '/images/placeholder/album.jpg',
@@ -71,4 +72,9 @@ const PlaceHolderImages: PlaceHolderImagesType = {
     user: '/images/placeholder/user.jpg'
 };
 
-export { SiteConfig, PlaceHolderImages };
+
+const secrets = {
+    API_URL: 'https://kampita-api.vercel.app/api',
+}
+
+export { SiteConfig, PlaceHolderImages, secrets };
