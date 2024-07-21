@@ -1,14 +1,13 @@
 // Player.tsx
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useAudio } from "@/app/contexts/AudioContext";
 import { Slider } from "@/components/ui/slider";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Toast, ToastAction, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast';
 import { useToast } from "@/components/ui/use-toast";
 import {
   Shuffle,
@@ -32,7 +31,7 @@ const formatTime = (time: number) => {
   return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 };
 
-const PlayerControls = React.memo(() => {
+const PlayerControls: React.FC = () => {
   const {
     isPlaying,
     togglePlay,
@@ -83,6 +82,7 @@ const PlayerControls = React.memo(() => {
 
   return (
     <div className="flex items-center justify-center gap-4">
+      {/* Shuffle Button */}
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -101,6 +101,7 @@ const PlayerControls = React.memo(() => {
         </Tooltip>
       </TooltipProvider>
 
+      {/* Previous Button */}
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -118,6 +119,7 @@ const PlayerControls = React.memo(() => {
         </Tooltip>
       </TooltipProvider>
 
+      {/* Play/Pause Button */}
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -141,6 +143,7 @@ const PlayerControls = React.memo(() => {
         </Tooltip>
       </TooltipProvider>
 
+      {/* Next Button */}
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -158,6 +161,7 @@ const PlayerControls = React.memo(() => {
         </Tooltip>
       </TooltipProvider>
 
+      {/* Repeat Button */}
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -185,11 +189,9 @@ const PlayerControls = React.memo(() => {
       </TooltipProvider>
     </div>
   );
-});
+};
 
-PlayerControls.displayName = "PlayerControls";
-
-const TrackInfo = React.memo(() => {
+const TrackInfo: React.FC = () => {
   const { currentTrack } = useAudio();
 
   if (!currentTrack) {
@@ -219,11 +221,9 @@ const TrackInfo = React.memo(() => {
       </div>
     </div>
   );
-});
+};
 
-TrackInfo.displayName = "TrackInfo";
-
-const VolumeControl = React.memo(() => {
+const VolumeControl: React.FC = () => {
   const { volume, setVolume } = useAudio();
 
   return (
@@ -238,11 +238,9 @@ const VolumeControl = React.memo(() => {
       />
     </div>
   );
-});
+};
 
-VolumeControl.displayName = "VolumeControl";
-
-const Queue = React.memo(() => {
+const Queue: React.FC = () => {
   const { queue, currentTrack, playTrack, removeFromQueue } = useAudio();
 
   const allTracks = useMemo(() => {
@@ -291,11 +289,9 @@ const Queue = React.memo(() => {
       </div>
     </div>
   );
-});
+};
 
-Queue.displayName = "Queue";
-
-const ProgressSlider = React.memo(() => {
+const ProgressSlider: React.FC = () => {
   const { currentTime, duration, seekTo } = useAudio();
 
   const handleSeek = useCallback(
@@ -323,11 +319,9 @@ const ProgressSlider = React.memo(() => {
       </Tooltip>
     </TooltipProvider>
   );
-});
+};
 
-ProgressSlider.displayName = "ProgressSlider";
-
-const DurationDisplay = React.memo(() => {
+const DurationDisplay: React.FC = () => {
   const { currentTime, duration } = useAudio();
 
   return (
@@ -335,9 +329,7 @@ const DurationDisplay = React.memo(() => {
       {formatTime(currentTime)} / {formatTime(duration)}
     </div>
   );
-});
-
-DurationDisplay.displayName = "DurationDisplay";
+};
 
 export function Player() {
   const { currentTrack, isPlaying, togglePlay, isLoading } = useAudio();
@@ -432,7 +424,8 @@ export function Player() {
             </SheetContent>
           </Sheet>
         </div>
-      </div></div>
+      </div>
+    </div>
   ), []);
 
   return (
