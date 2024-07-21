@@ -22,14 +22,14 @@ const fetchSongCached = async (id: string) => {
     console.log('Song fetched successfully');
     return response.data?.[0]
   } catch (error) {
-   console.log('Error fetching song with lyrics:', error);
+    // console.error('Error fetching song with lyrics:', error);
     try {
       const req = await getSongById({ id: id, lyrics: false })
       const response: GetSongByIdResponse = await decodeHtmlEntitiesInJson(req)
       console.log('Song fetched successfully without lyrics');
       return response.data?.[0]
     } catch (fallbackError) {
-      console.log('Error fetching song without lyrics:', fallbackError);
+      // console.error('Error fetching song without lyrics:', fallbackError);
       return null;
     }
   }
@@ -71,7 +71,7 @@ async function createSongSuggestions(songId: string) {
       song_file: song.downloadUrl?.[2].url
     })) || [];
   } catch (error) {
-    console.log('Error fetching song suggestions:', error);
+    console.error('Error fetching song suggestions:', error);
     return [];
   }
 }
@@ -95,7 +95,7 @@ async function createArtistSongs(ArtistId: string) {
       song_file: song.downloadUrl?.[2].url
     }));
   } catch (error) {
-    console.log('Error fetching artist songs:', error);
+    console.error('Error fetching artist songs:', error);
     return [];
   }
 }
@@ -149,26 +149,26 @@ export default async function Page({ params }: { params: { id: string } }) {
           </CardContent>
         </Card>
 
-        <div className='p-2'>
+        <Card className='p-2 md:p-4 mb-8'>
           <SongList
             HeadingName='Artists'
             songCards={artistProps}
           />
-        </div>
+        </Card>
 
-        <div className='p-2'>
+        <Card className='p-2 md:p-4 mb-8'>
           <SongList
             HeadingName='Recommended Songs'
             songCards={suggestions}
           />
-        </div>
+        </Card>
 
-        <div className='p-2'>
+        <Card className='p-2 md:p-4 mb-8'>
           <SongList
             HeadingName='More from Artist'
             songCards={moreFromArtist}
           />
-        </div>
+        </Card>
 
         {song.lyrics && (
           <Card>
@@ -184,8 +184,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       </main>
     )
   } catch (error) {
-    console.log('Error rendering song page:', error);
+    console.error('Error rendering song page:', error);
     return <div className="text-center p-8">An error occurred while loading the song. Please try again later.</div>
   }
 }
-
