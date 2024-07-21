@@ -105,8 +105,8 @@ export default async function Page({ params }: { params: { id: string } }) {
   try {
     const song = await fetchSongCached(params.id)
     if (!song) {
-      // console.log('Song not found, returning 404');
-      // notFound()
+      console.log('Song not found, returning 404');
+      notFound()
     }
 
     const [suggestions, moreFromArtist] = await Promise.all([
