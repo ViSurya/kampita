@@ -44,12 +44,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <NextTopLoader />
-         <AudioProvider>
-          <MainMenu />
-          {children}
+          <AudioProvider>
+            <MainMenu />
+            {children}
 
-          <div className="h-[500px]"></div>
-          <Player />
+            <div className="h-[500px]"></div>
+            <Player />
           </AudioProvider>
           <Toaster />
         </ThemeProvider>

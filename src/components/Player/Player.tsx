@@ -8,6 +8,8 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Toast, ToastAction, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from '@/components/ui/toast';
+import { useToast } from "@/components/ui/use-toast";
 import {
   Shuffle,
   SkipBack,
@@ -20,6 +22,7 @@ import {
   Loader,
   X,
   ChevronUp,
+  Repeat1,
 } from "lucide-react";
 
 const formatTime = (time: number) => {
@@ -43,9 +46,38 @@ const PlayerControls = React.memo(() => {
     queue,
     currentTrack,
   } = useAudio();
+  const { toast } = useToast();
 
   const canPlayPrevious = useMemo(() => queue.length > 0 || currentTrack, [queue, currentTrack]);
   const canPlayNext = useMemo(() => queue.length > 0 || repeatMode !== 'off', [queue, repeatMode]);
+
+  const handleShuffleToggle = () => {
+    toggleShuffle();
+    toast({
+      title: "Shuffle",
+      description: isShuffle ? "Shuffle disabled" : "Shuffle enabled",
+    });
+  };
+
+  const handleRepeatToggle = () => {
+    toggleRepeat();
+    let message;
+    switch (repeatMode) {
+      case "off":
+        message = "Repeat All enabled";
+        break;
+      case "all":
+        message = "Repeat One enabled";
+        break;
+      case "one":
+        message = "Repeat disabled";
+        break;
+    }
+    toast({
+      title: "Repeat Mode",
+      description: message,
+    });
+  };
 
   return (
     <div className="flex items-center justify-center gap-4">
@@ -55,9 +87,10 @@ const PlayerControls = React.memo(() => {
             <Button
               variant={isShuffle ? "secondary" : "ghost"}
               size="icon"
-              onClick={toggleShuffle}
+              onClick={handleShuffleToggle}
+              className="hover:bg-secondary/50"
             >
-              <Shuffle className="h-4 w-4" />
+              <Shuffle className="h-5 w-5 lg:h-4 lg:w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
@@ -69,13 +102,14 @@ const PlayerControls = React.memo(() => {
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={playPrevious}
               disabled={!canPlayPrevious}
+              className="hover:bg-secondary/50"
             >
-              <SkipBack className="h-4 w-4" />
+              <SkipBack className="h-5 w-5 lg:h-4 lg:w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Previous</TooltipContent>
@@ -85,19 +119,19 @@ const PlayerControls = React.memo(() => {
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={togglePlay} 
-              className="h-10 w-10"
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={togglePlay}
+              className="h-10 w-10 hover:bg-secondary/50"
               disabled={!currentTrack}
             >
               {isLoading ? (
-                <Loader className="h-4 w-4 animate-spin" />
+                <Loader className="h-5 w-5 lg:h-4 lg:w-4 animate-spin" />
               ) : isPlaying ? (
-                <Pause className="h-4 w-4" />
+                <Pause className="h-5 w-5 lg:h-4 lg:w-4" />
               ) : (
-                <Play className="h-4 w-4" />
+                <Play className="h-5 w-5 lg:h-4 lg:w-4" />
               )}
             </Button>
           </TooltipTrigger>
@@ -108,13 +142,14 @@ const PlayerControls = React.memo(() => {
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={playNext}
               disabled={!canPlayNext}
+              className="hover:bg-secondary/50"
             >
-              <SkipForward className="h-4 w-4" />
+              <SkipForward className="h-5 w-5 lg:h-4 lg:w-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Next</TooltipContent>
@@ -127,17 +162,22 @@ const PlayerControls = React.memo(() => {
             <Button
               variant={repeatMode !== "off" ? "secondary" : "ghost"}
               size="icon"
-              onClick={toggleRepeat}
+              onClick={handleRepeatToggle}
+              className="hover:bg-secondary/50"
             >
-              <Repeat className="h-4 w-4" />
+              {repeatMode === "one" ? (
+                <Repeat1 className="h-5 w-5 lg:h-4 lg:w-4" />
+              ) : (
+                <Repeat className="h-5 w-5 lg:h-4 lg:w-4" />
+              )}
             </Button>
           </TooltipTrigger>
           <TooltipContent>
             {repeatMode === "off"
               ? "Enable Repeat All"
               : repeatMode === "all"
-              ? "Repeat One"
-              : "Disable Repeat"}
+                ? "Repeat One"
+                : "Disable Repeat"}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -186,7 +226,7 @@ const VolumeControl = React.memo(() => {
 
   return (
     <div className="flex items-center space-x-2">
-      <Volume2 className="h-4 w-4" />
+      <Volume2 className="h-5 w-5 lg:h-4 lg:w-4" />
       <Slider
         value={[volume * 100]}
         max={100}
@@ -217,9 +257,8 @@ const Queue = React.memo(() => {
           allTracks.map((track, index) => (
             <div
               key={track.id}
-              className={`flex items-center justify-between py-1 ${
-                index === 0 ? "bg-secondary" : ""
-              } hover:bg-secondary/50 cursor-pointer group`}
+              className={`flex items-center justify-between py-1 ${index === 0 ? "bg-secondary" : ""
+                } hover:bg-secondary/50 cursor-pointer group`}
               onClick={() => index !== 0 && playTrack(index - 1)}
             >
               <div className="flex items-center space-x-2 flex-grow min-w-0">
@@ -241,7 +280,7 @@ const Queue = React.memo(() => {
                     removeFromQueue(track.id);
                   }}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5 lg:h-4 lg:w-4" />
                 </Button>
               )}
             </div>
@@ -311,17 +350,17 @@ export function Player() {
             <TrackInfo />
           </div>
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" onClick={togglePlay} disabled={!currentTrack}>
+            <Button variant="ghost" size="icon" onClick={togglePlay} disabled={!currentTrack} className="hover:bg-secondary/50">
               {isLoading ? (
-                <Loader className="h-4 w-4 animate-spin" />
+                <Loader className="h-5 w-5 lg:h-4 lg:w-4 animate-spin" />
               ) : isPlaying ? (
-                <Pause className="h-4 w-4" />
+                <Pause className="h-5 w-5 lg:h-4 lg:w-4" />
               ) : (
-                <Play className="h-4 w-4" />
+                <Play className="h-5 w-5 lg:h-4 lg:w-4" />
               )}
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)}>
-              <ChevronUp className={`h-4 w-4 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="hover:bg-secondary/50">
+              <ChevronUp className={`h-5 w-5 lg:h-4 lg:w-4 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
             </Button>
           </div>
         </div>
@@ -329,7 +368,7 @@ export function Player() {
       {isExpanded && (
         <div className="fixed inset-0 bg-background z-40 overflow-y-auto">
           <div className="flex flex-col p-4 ">
-            <Button variant="ghost" size="icon" className="self-end mb-4" onClick={() => setIsExpanded(false)}>
+            <Button variant="ghost" size="icon" className="self-end mb-4 hover:bg-secondary/50" onClick={() => setIsExpanded(false)}>
               <X className="h-6 w-6" />
             </Button>
             {currentTrack && (
@@ -364,17 +403,26 @@ export function Player() {
           <TrackInfo />
         </div>
         <div className="flex items-center gap-2">
-         <div className="border rounded-lg p-2">
-         <DurationDisplay />
-         </div>
+          <div className="border rounded-lg p-2">
+            <DurationDisplay />
+          </div>
           <PlayerControls />
         </div>
         <div className="flex items-center space-x-4 flex-1 justify-end">
           <VolumeControl />
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <ListMusic className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="hover:bg-secondary/50">
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <ListMusic className="h-5 w-5 lg:h-4 lg:w-4" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Open Queue
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </Button>
             </SheetTrigger>
             <SheetContent>
@@ -382,8 +430,7 @@ export function Player() {
             </SheetContent>
           </Sheet>
         </div>
-      </div>
-    </div>
+      </div></div>
   ), []);
 
   return (

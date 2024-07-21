@@ -16,7 +16,7 @@ const SongList: React.FC<SongListProps> = ({ HeadingName, songCards }) => {
   const handleScroll = (direction: 'left' | 'right') => {
     const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')
     if (scrollContainer) {
-      const scrollAmount = scrollContainer.clientWidth * 0.95
+      const scrollAmount = scrollContainer.clientWidth * 1
       const newScrollPosition = direction === 'left'
         ? scrollContainer.scrollLeft - scrollAmount
         : scrollContainer.scrollLeft + scrollAmount

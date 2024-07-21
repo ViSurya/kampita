@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { PlaceHolderImages } from "@/lib/config";
 import { useAudio } from "@/app/contexts/AudioContext";
-import { Plus } from 'lucide-react';
+import { ListMusic, Plus } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 
 const {
@@ -68,16 +68,16 @@ const generateUrl = (type: string, id: string) => {
   }
 };
 
-const ContentWrapper = memo(function ContentWrapper({ 
-  children, 
-  className, 
-  addLinks, 
-  url 
-}: { 
-  children: React.ReactNode; 
-  className?: string; 
-  addLinks: boolean; 
-  url: string 
+const ContentWrapper = memo(function ContentWrapper({
+  children,
+  className,
+  addLinks,
+  url
+}: {
+  children: React.ReactNode;
+  className?: string;
+  addLinks: boolean;
+  url: string
 }) {
   if (addLinks) {
     return (
@@ -175,7 +175,7 @@ const SongCard = memo(function SongCard({
             <span className="sr-only">View {name}</span>
           </ContentWrapper>
           <AspectRatio ratio={1 / 1}>
-            {imageLoading && ( 
+            {imageLoading && (
               <Skeleton className={`absolute w-full h-full ${isCircular ? "rounded-full" : ""}`} />
             )}
             <Image
@@ -185,7 +185,7 @@ const SongCard = memo(function SongCard({
               height={250}
               loading="lazy"
               onError={handleError}
-              onLoad={handleImageLoad} 
+              onLoad={handleImageLoad}
               className={`absolute w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${isCircular ? "rounded-full" : ""} ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
             />
           </AspectRatio>
@@ -194,7 +194,7 @@ const SongCard = memo(function SongCard({
               <button
                 aria-label={isPlaying && currentTrack?.id === id ? "Pause" : "Play"}
                 onClick={handlePlay}
-                className={`group/play z-20 m-auto aspect-square w-12 ${isCircular ? "rounded-full" : "rounded-full"} bg-muted/75 duration-200 hover:w-14 active:w-12`}
+                className={`group/play z-20 m-auto aspect-square w-12 ${isCircular ? "rounded-full" : "rounded-full"} bg-muted/50 lg:bg-muted/75 duration-200 hover:w-14 active:w-12`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -221,24 +221,24 @@ const SongCard = memo(function SongCard({
               <button
                 aria-label="Add to Queue"
                 onClick={handleAddToQueue}
-                className={`group/play hidden lg:block z-20 m-auto aspect-square w-12 ${isCircular ? "rounded-full" : "rounded-full"} bg-muted/75 duration-200 hover:w-14 active:w-12 ml-2`}
+                className={`group/play lg:block z-20 m-auto aspect-square w-12 ${isCircular ? "rounded-full" : "rounded-full"} bg-muted/50 lg:bg-muted/75 duration-200 hover:w-14 active:w-12 ml-2`}
               >
-                <Plus className="m-auto h-full w-6 p-0.5 duration-200 group-hover/play:w-7" />
+                <ListMusic className="m-auto h-full w-6 p-0.5 duration-200 group-hover/play:w-7" />
               </button>
             </div>
           )}
         </div>
         <div>
-                <ContentWrapper className="block" addLinks={addLinks} url={url}>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
+          <ContentWrapper className="block" addLinks={addLinks} url={url}>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <h3 className={`font-medium text-center ${isCircular ? "text-sm lg:text-base" : "text-base lg:text-lg"} truncate mt-2`}>{name}</h3>
-              </TooltipTrigger>
-              <TooltipContent>{name}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-                </ContentWrapper>
+                </TooltipTrigger>
+                <TooltipContent>{name}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </ContentWrapper>
           {type === "song" && !isCircular && (
             <p className="text-xs text-muted-foreground text-center truncate">
               {uniqueArtists.map((artist, index) => (

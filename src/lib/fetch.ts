@@ -18,7 +18,6 @@ const fetchFromAPI = async <T>(endpoint: string, params: Record<string, any>) =>
   });
 
   const response = await fetch(url.toString());
-  console.log(url.toString());
   if (!response.ok) {
     throw new Error(`API request failed with status ${response.status} of ${url.toString()}`);
   }

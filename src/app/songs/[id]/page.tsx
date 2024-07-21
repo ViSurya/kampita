@@ -22,7 +22,7 @@ const fetchSongCached = async (id: string) => {
     // console.log('Song fetched successfully');
     return response.data?.[0]
   } catch (error) {
-   console.log('Error fetching song with lyrics:', error);
+    console.log('Error fetching song with lyrics:', error);
     try {
       const req = await getSongById({ id: id, lyrics: false })
       const response: GetSongByIdResponse = await decodeHtmlEntitiesInJson(req)
@@ -118,7 +118,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
     return (
       <main className='max-w-screen-xl mx-auto p-2 md:p-4'>
-        <MainHero songData={song}/>
+        <MainHero songData={song} />
 
         <Card id="download-section" className='mb-8'>
           <CardHeader className='py-4 px-2'>
@@ -156,19 +156,24 @@ export default async function Page({ params }: { params: { id: string } }) {
           />
         </div>
 
-        <div className='p-2'>
-          <SongList
-            HeadingName='Recommended Songs'
-            songCards={suggestions}
-          />
-        </div>
+        {suggestions.length > 0 && (
+          <div className='p-2'>
+            <SongList
+              HeadingName='Recommended Songs'
+              songCards={suggestions}
+            />
+          </div>
+        )}
 
-        <div className='p-2'>
-          <SongList
-            HeadingName='More from Artist'
-            songCards={moreFromArtist}
-          />
-        </div>
+        {moreFromArtist.length > 0 && (
+          <div className='p-2'>
+            <SongList
+              HeadingName='More from Artist'
+              songCards={moreFromArtist}
+            />
+          </div>
+        )}
+
 
         {song.lyrics && (
           <Card>
