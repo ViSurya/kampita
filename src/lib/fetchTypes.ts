@@ -272,7 +272,7 @@ export interface GlobalSearchResponse {
       type: string;
       year: string | null;
       releaseDate: string | null;
-      duration: number | null;
+      duration: number;
       label: string | null;
       explicitContent: boolean;
       playCount: number | null;

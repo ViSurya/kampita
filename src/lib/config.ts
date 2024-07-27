@@ -33,12 +33,12 @@ type PlaceHolderImagesType = {
 const SiteConfig: SiteConfigType = {
     siteName: 'Kampita',
     tagLine: 'Kampita - Feel the Beat, Free the Music',
-    siteURL: 'https://www.kampita.com/',
+    siteURL: 'https://www.kampita.com',
     siteOwner: 'Vishal Kaleria',
     siteDescription: 'Kampita offers high-quality music downloads and streaming for free. Enjoy an extensive library of tracks without any cost. Feel the beat and free the music with Kampita.',
     contactEmail: 'support@kampita.com',
     copyright: '© 2024 Kampita. All rights reserved.',
-    
+
     socialLinks: {
         x: {
             userName: 'KampitaMusic',

@@ -9,7 +9,7 @@ interface ApiResponse<T> {
 }
 
 
-const fetchFromAPI = async <T>(endpoint: string, params: Record<string, any>) => {
+ const fetchFromAPI = async <T>(endpoint: string, params: Record<string, any>) => {
   const url = new URL(`${API_URL}/${endpoint}`);
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined) {

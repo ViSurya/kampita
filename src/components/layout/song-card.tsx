@@ -9,6 +9,8 @@ import { PlaceHolderImages } from "@/lib/config";
 import { useAudio } from "@/app/contexts/AudioContext";
 import { ListMusic, Plus } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/use-toast"
+import { Toast } from "@/components/ui/toast"
 
 const {
   album: albumPlaceholder,
@@ -48,6 +50,8 @@ const PlaceHoldersImagesObj = {
   song: songPlaceholder,
   user: userPlaceholder,
 };
+
+
 
 const generateUrl = (type: string, id: string) => {
   switch (type) {
@@ -102,6 +106,7 @@ const SongCard = memo(function SongCard({
   addLinks = true,
   song_file = "",
 }: SongCardProps) {
+  const { toast } = useToast()
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const { setCurrentTrack, togglePlay, isPlaying, currentTrack, addToQueue } = useAudio();
@@ -147,12 +152,21 @@ const SongCard = memo(function SongCard({
       };
       if (currentTrack?.id === id) {
         togglePlay();
+        toast({
+          title: isPlaying ? "Paused" : "Now Playing",
+          description: `${name}`,
+        })
       } else {
         setCurrentTrack(track);
+        toast({
+          duration: 1500,
+          title: "Now Playing",
+          description: `${name}`,
+        })
       }
     }
-  }, [id, name, song_file, type, uniqueArtists, currentTrack, images, placeholderImage, togglePlay, setCurrentTrack]);
-
+  }, [id, name, song_file, type, uniqueArtists, currentTrack, images, placeholderImage, togglePlay, setCurrentTrack, isPlaying, toast]);
+  
   const handleAddToQueue = useCallback(() => {
     if (type === "song" && song_file) {
       const track = {
@@ -164,8 +178,13 @@ const SongCard = memo(function SongCard({
         previewImage: images && images.length > 0 ? images[2].url || placeholderImage : placeholderImage,
       };
       addToQueue(track);
+      toast({
+        duration: 1500,
+        title: "Added to Queue",
+        description: `${name}`,
+      })
     }
-  }, [id, name, song_file, type, uniqueArtists, images, placeholderImage, addToQueue]);
+  }, [id, name, song_file, type, uniqueArtists, images, placeholderImage, addToQueue, toast]);
 
   return (
     <Card className={`group hover:bg-slate-100 ${isCircular ? "w-36 lg:w-40" : "w-40 lg:w-52"} hover:dark:bg-slate-800 hover:shadow-md`}>

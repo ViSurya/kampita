@@ -269,10 +269,10 @@ const Queue: React.FC = () => {
                 </div>
               </div>
               {index === 0 ? (
-                <span className="text-xs text-gray-500 mr-2">Now Playing</span>
+                <Button variant={'outline'} className="text-xs text-gray-500 min-w-20 ml-4">Now Playing</Button>
               ) : (
                 <Button
-                  variant="ghost"
+                  variant={"outline"}
                   size="icon"
                   className="flex-shrink-0 ml-2"
                   onClick={(e) => {
@@ -406,10 +406,11 @@ export function Player() {
           <VolumeControl />
           <Sheet>
             <SheetTrigger asChild>
+              
               <Button variant="ghost" size="icon" className="hover:bg-secondary/50">
                 <TooltipProvider delayDuration={0}>
                   <Tooltip>
-                    <TooltipTrigger>
+                    <TooltipTrigger asChild>
                       <ListMusic className="h-5 w-5 lg:h-4 lg:w-4" />
                     </TooltipTrigger>
                     <TooltipContent>

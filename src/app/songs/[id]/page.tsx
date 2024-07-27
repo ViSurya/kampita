@@ -10,25 +10,24 @@ import { getArtistSongs, getSongById, getSongSuggestionsById } from '@/lib/fetch
 import { GetArtistSongsResponse, GetSongByIdResponse, GetSongSuggestionsByIdResponse } from '@/lib/fetchTypes'
 import { decodeHtmlEntities, decodeHtmlEntitiesInJson, formatDuration } from '@/lib/utils'
 import MainHero from '../_components/MainHero'
+import Link from 'next/link'
+import DownloadButton from '../_components/DownloadButton'
+import { PlaceHolderImages, SiteConfig } from '@/lib/config'
 
 export const runtime = 'edge'
 
 const fetchSongCached = cache(async (id: string) => {
-  // console.log(`Fetching song with id: ${id}`);
   try {
     const req = await getSongById({ id: id })
     const response: GetSongByIdResponse = await decodeHtmlEntitiesInJson(req)
-    // console.log('Song fetched successfully');
     return response.data?.[0]
   } catch (error) {
-    console.log('Error fetching song with lyrics:', error);
+    // console.log('Error fetching song with lyrics:', error);
     try {
       const req = await getSongById({ id: id, lyrics: false })
       const response: GetSongByIdResponse = await decodeHtmlEntitiesInJson(req)
-      // console.log('Song fetched successfully without lyrics');
       return response.data?.[0]
     } catch (fallbackError) {
-      // console.log('Error fetching song without lyrics:', fallbackError);
       return null;
     }
   }
@@ -69,60 +68,31 @@ const createSongSuggestions = cache(async (songId: string) => {
 })
 
 
-// async function createSongSuggestions(songId: string) {
-//   const suggestions = await getSongSuggestionsById({ id: songId, limit: 10 });
-//   const response: GetSongSuggestionsByIdResponse = await decodeHtmlEntitiesInJson(suggestions);
-//   return response.data?.map(song => ({
-//     id: song.id,
-//     name: song.name,
-//     artists: song.artists?.all,
-//     images: song.image,
-//     type: 'song' as const,
-//     song_file: song.downloadUrl?.[2].url
-//   })) || [];
-// }
+
 
 
 const createArtistSongs = cache(async (ArtistId: string) => {
   const suggestions = await getArtistSongs({ id: ArtistId });
-    const response: GetArtistSongsResponse = await decodeHtmlEntitiesInJson(suggestions);
-    if (!response.data || !Array.isArray(response.data.songs)) {
-      return [];
-    }
-    return response.data.songs.map(song => ({
-      id: song.id,
-      name: song.name,
-      artists: song.artists?.all || [],
-      images: song.image,
-      type: 'song' as const,
-      song_file: song.downloadUrl?.[2].url
-    }));
+  const response: GetArtistSongsResponse = await decodeHtmlEntitiesInJson(suggestions);
+  if (!response.data || !Array.isArray(response.data.songs)) {
+    return [];
+  }
+  return response.data.songs.map(song => ({
+    id: song.id,
+    name: song.name,
+    artists: song.artists?.all || [],
+    images: song.image,
+    type: 'song' as const,
+    song_file: song.downloadUrl?.[2].url
+  }));
 })
 
-// async function createArtistSongs(ArtistId: string) {
-
-//     const suggestions = await getArtistSongs({ id: ArtistId });
-//     const response: GetArtistSongsResponse = await decodeHtmlEntitiesInJson(suggestions);
-//     if (!response.data || !Array.isArray(response.data.songs)) {
-//       return [];
-//     }
-//     return response.data.songs.map(song => ({
-//       id: song.id,
-//       name: song.name,
-//       artists: song.artists?.all || [],
-//       images: song.image,
-//       type: 'song' as const,
-//       song_file: song.downloadUrl?.[2].url
-//     }));
-//   }
 
 
 export default async function Page({ params }: { params: { id: string } }) {
-  // console.log(`Rendering page for song id: ${params.id}`);
   try {
     const song = await fetchSongCached(params.id)
     if (!song) {
-      // console.log('Song not found, returning 404');
       notFound()
     }
 
@@ -131,9 +101,62 @@ export default async function Page({ params }: { params: { id: string } }) {
       createArtistSongs(song?.artists.primary?.[0].id || song?.artists.featured?.[0].id || song?.artists.all?.[0].id || '0000')
     ]);
 
+
+    function formatDurationSchema(seconds: number): string {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `PT${minutes}M${remainingSeconds}S`;
+    }
+    
+    function generateSchema(song: NonNullable<GetSongByIdResponse['data']>[0]) {
+      const siteUrl = SiteConfig.siteURL;
+      const songUrl = `${siteUrl}/songs/${song.id}`;
+      const audioObjects = song.downloadUrl.map(download => ({
+        '@type': 'AudioObject',
+        '@id': `${song.id}_${download.quality}`,
+        url: download.url,
+        encodingFormat: 'audio/mpeg',
+        bitrate: download.quality,
+        duration: formatDurationSchema(song.duration),
+      }));
+    
+      const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'MusicRecording',
+        '@id': songUrl,
+        name: song.name,
+        duration: formatDurationSchema(song.duration),
+        isrcCode: song.id,
+        datePublished: song.releaseDate || undefined,
+        genre: song.language + " " + song.type,
+        image: song.image[song.image.length - 1]?.url || PlaceHolderImages.song,
+        url: songUrl,
+        inAlbum : {
+          '@type': 'MusicAlbum',
+          '@id': song.album.id,
+          name: song.album.name || 'Unknown Album',
+        },
+        byArtist: song.artists.all.map(artist => ({
+          '@type': 'MusicGroup',
+          '@id': artist.id,
+          name: artist.name,
+          // url: `${siteUrl}/artist/${artist.id}`,
+          image: artist.image[artist.image.length - 1]?.url || PlaceHolderImages.artist,
+        })),
+        audio: audioObjects,
+      };
+    
+      return schema;
+    }
+
+
+    const schema = generateSchema(song)
+
+
     const artistProps = createArtistProps(song);
 
     return (
+   <>
       <main className='max-w-screen-xl mx-auto p-2 md:p-4'>
         <MainHero songData={song} />
 
@@ -157,7 +180,7 @@ export default async function Page({ params }: { params: { id: string } }) {
                     <TableCell className='text-center p-2'>{download.quality}</TableCell>
                     <TableCell className='text-center p-2'>MP3</TableCell>
                     <TableCell className='text-center p-2'>
-                      <Button>Download</Button>
+                      <DownloadButton downloadUrl={download.url} />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -204,23 +227,73 @@ export default async function Page({ params }: { params: { id: string } }) {
           </Card>
         )}
       </main>
+      <script 
+       type="application/ld+json"
+       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      </>
     )
   } catch (error) {
-    console.log('Error rendering song page:', error);
+    // console.log('Error rendering song page:', error);
     return <div className="text-center p-8">An error occurred while loading the song. Please try again later.</div>
   }
 }
 
 
 
-export async function generateMetadata({params}: {params: {id:string}}) {
-  const song = await fetchSongCached(params.id)
-  if(!song) {
-    return {}
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const song = await fetchSongCached(params.id);
+  if (!song) {
+    return {};
   }
-  
+
+  const getArtistNames = (artists: Array<{ name: string }>, limit: number = 5) => {
+    return artists.slice(0, limit).map(artist => artist.name).join(', ');
+  };
+
+  let artistNames = getArtistNames(song.artists.primary) ||
+    getArtistNames(song.artists.featured) ||
+    getArtistNames(song.artists.all);
+
+  const title = `${song.name} MP3 Song Download`;
+  const description = `Download "${song.name}" MP3 song by ${artistNames} from the album "${song.album.name}". Released on ${song.releaseDate}, this track is available in ${song.language} language under the ${song.label} label. Duration: ${formatDuration(song.duration || 0)} minutes.`;
+
   return {
-    title: song.name,
-    
-  }
+    title: title,
+    description: description,
+    metadataBase: new URL(SiteConfig.siteURL),
+    openGraph: {
+      title: title,
+      description: description,
+      type: 'music.song',
+      url: `/song/${song.id}`,
+      images: [
+        {
+          url: song.image[2].url,
+          width: 500,
+          height: 500,
+          alt: `${song.name} song cover art`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: description,
+      images: song.downloadUrl?.[4].url || '',
+    },
+    alternates: {
+      canonical: `/song/${song.id}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    other: {
+      'music:musician': artistNames,
+      'music:album': song.album.name || '',
+      'music:release_date': song.releaseDate || '',
+      'og:audio': song.downloadUrl?.[4].url || '',
+    },
+  };
 }

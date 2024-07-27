@@ -75,8 +75,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsShuffle(parsedState.isShuffle || false);
       setRepeatMode(parsedState.repeatMode || 'off');
       setCurrentTrack(parsedState.currentTrack || null);
+      setIsPlaying(false); // Ensure it's not playing on restore
+      
     }
-  }, []);
+  }, []);;
 
   useEffect(() => {
     restoreState();
@@ -89,26 +91,74 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [restoreState]);
 
+  useEffect(() => {
+    if (currentTrack && audioRef.current) {
+      setIsLoading(true);
+      audioRef.current.src = currentTrack.url;
+      audioRef.current.load(); // Load the audio without playing
+      setIsLoading(false);
+    }
+  }, [currentTrack]);
+
+  // const togglePlay = useCallback(() => {
+  //   if (!audioRef.current) return;
+  //   if (isPlaying) {
+  //     audioRef.current.pause();
+  //     setIsPlaying(false);
+  //   } else if (currentTrack) {
+  //     if (audioRef.current.ended) {
+  //       audioRef.current.currentTime = 0;
+  //     }
+  //     audioRef.current.play().catch(console.error);
+  //     setIsPlaying(true);
+  //   }
+  //   saveState();
+  // }, [isPlaying, currentTrack, saveState]);
+  //
+  // const seekTo = useCallback((time: number) => {
+  //   if (audioRef.current) {
+  //     audioRef.current.currentTime = time;
+  //   }
+  // }, []);
+
   const togglePlay = useCallback(() => {
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else if (currentTrack) {
-      if (audioRef.current.ended) {
-        audioRef.current.currentTime = 0;
-      }
-      audioRef.current.play().catch(console.error);
-      setIsPlaying(true);
+      setIsLoading(true);
+      audioRef.current.play()
+        .then(() => {
+          setIsPlaying(true);
+          setIsLoading(false);
+        })
+        .catch(error => {
+          console.error("Playback failed:", error);
+          setIsPlaying(false);
+          setIsLoading(false);
+        });
     }
     saveState();
   }, [isPlaying, currentTrack, saveState]);
 
   const seekTo = useCallback((time: number) => {
     if (audioRef.current) {
+      setIsLoading(true);
       audioRef.current.currentTime = time;
+      if (isPlaying) {
+        audioRef.current.play()
+          .then(() => setIsLoading(false))
+          .catch(error => {
+            console.error("Seek failed:", error);
+            setIsLoading(false);
+          });
+      } else {
+        setIsLoading(false);
+      }
     }
-  }, []);
+  }, [isPlaying]);
+
 
   const addToPlayHistory = useCallback((track: Track) => {
     setPlayHistory(prev => [track, ...prev].slice(0, MAX_HISTORY_LENGTH));
