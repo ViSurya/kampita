@@ -129,7 +129,7 @@ const SearchPage: React.FC = () => {
     <Card key={song.id} className="mb-2 p-0 hover:shadow-md">
       <CardContent className="flex items-center p-2">
         <div className="relative mr-3 flex-shrink-0">
-          <Link href={`${directoryURLs.songs}/${song.id}`} className="block">
+          <Link prefetch={false} href={`${directoryURLs.songs}/${song.id}`} className="block">
             <Image
               src={song.image?.[0]?.url || placeholderImages.song}
               alt={song.name}
@@ -140,7 +140,7 @@ const SearchPage: React.FC = () => {
           </Link>
         </div>
         <div className="flex-grow overflow-hidden mr-2">
-          <Link href={`${directoryURLs.songs}/${song.id}`} className="block hover:underline">
+          <Link prefetch={false} href={`${directoryURLs.songs}/${song.id}`} className="block hover:underline">
             <h3 className="font-semibold text-sm truncate">{song.name}</h3>
           </Link>
           <p className="text-xs text-gray-600 truncate">{getArtists(song)}</p>
