@@ -1,17 +1,17 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
-import { searchSongs } from '@/lib/fetch'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { PlayCircle, Plus, AlertCircle } from 'lucide-react'
-import { useToast } from "@/components/ui/use-toast"
-import { useAudio } from '../contexts/AudioContext'
-import { Button } from '@/components/ui/button'
-import { decodeHtmlEntitiesInJson } from '@/lib/utils'
-import { directoryURLs, placeholderImages } from '@/lib/config'
-import Link from 'next/link'
+import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
+import { searchSongs } from '@/lib/fetch';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PlayCircle, Plus, AlertCircle } from 'lucide-react';
+import { useToast } from "@/components/ui/use-toast";
+import { useAudio } from '../contexts/AudioContext';
+import { Button } from '@/components/ui/button';
+import { decodeHtmlEntitiesInJson } from '@/lib/utils';
+import { directoryURLs, placeholderImages } from '@/lib/config';
+import Link from 'next/link';
 
 interface Song {
   id: string;
@@ -34,13 +34,13 @@ interface SearchSongsResponse {
 }
 
 const SearchPage: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState<string>('')
-  const [searchResults, setSearchResults] = useState<Song[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
-  const [trendingSearches] = useState<string[]>(['Latest Hits', 'Top 2024 Songs', 'Popular Artists'])
-  const { toast } = useToast()
-  const { currentTrack, setCurrentTrack, togglePlay, addToQueue } = useAudio()
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<Song[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [trendingSearches] = useState<string[]>(['Latest Hits', 'Top 2024 Songs', 'Popular Artists']);
+  const { toast } = useToast();
+  const { currentTrack, setCurrentTrack, togglePlay, addToQueue } = useAudio();
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query.trim()) return;
@@ -57,7 +57,7 @@ const SearchPage: React.FC = () => {
       setIsLoading(false);
     }
   }, []);
-  
+
   const debounce = <T extends (...args: any[]) => void>(func: T, delay: number): T => {
     let timeoutId: NodeJS.Timeout;
     return ((...args: Parameters<T>) => {
@@ -65,29 +65,31 @@ const SearchPage: React.FC = () => {
       timeoutId = setTimeout(() => func(...args), delay);
     }) as T;
   };
-  
-  const debouncedSearch = debounce((query: string) => handleSearch(query), 1000)
-  
+
+  const debouncedSearch = useCallback(debounce((query: string) => handleSearch(query), 1000), [handleSearch]);
+
   useEffect(() => {
-    const url = new URL(window.location.href)
+    const url = new URL(window.location.href);
     const params = new URLSearchParams(url.search);
-    const query = params.get('q')
+    const query = params.get('q');
 
     if (query) {
-      setSearchQuery(query)
-      params.delete('q')
-      window.history.replaceState({}, '', `${url.pathname}?${params.toString()}`)
+      setSearchQuery(query);
+      params.delete('q');
+      window.history.replaceState({}, '', `${url.pathname}?${params.toString()}`);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    if (searchQuery) debouncedSearch(searchQuery)
-  }, [searchQuery, debouncedSearch])
+    if (searchQuery) {
+      debouncedSearch(searchQuery);
+    }
+  }, [searchQuery, debouncedSearch]);
 
   const getArtists = (song: Song): string => {
-    const artists = song.artists.primary || song.artists.featured || song.artists.all
-    return artists ? artists.map(a => a.name).join(", ") : "Unknown Artist"
-  }
+    const artists = song.artists.primary || song.artists.featured || song.artists.all;
+    return artists ? artists.map(a => a.name).join(", ") : "Unknown Artist";
+  };
 
   const handlePlay = useCallback((song: Song) => {
     const track = {
@@ -97,14 +99,14 @@ const SearchPage: React.FC = () => {
       url: song.downloadUrl?.[2]?.url || "",
       image: song.image?.[0]?.url || placeholderImages.song,
       previewImage: song.image?.[2]?.url || placeholderImages.song,
-    }
+    };
     if (currentTrack?.id === song.id) {
-      togglePlay()
+      togglePlay();
     } else {
-      setCurrentTrack(track)
+      setCurrentTrack(track);
     }
-    toast({ title: "Now Playing", description: `${song.name} - ${getArtists(song)}` })
-  }, [currentTrack, setCurrentTrack, togglePlay, toast])
+    toast({ title: "Now Playing", description: `${song.name} - ${getArtists(song)}` });
+  }, [currentTrack, setCurrentTrack, togglePlay, toast]);
 
   const handleAddToQueue = useCallback((song: Song) => {
     const track = {
@@ -112,33 +114,30 @@ const SearchPage: React.FC = () => {
       name: song.name,
       artist: getArtists(song),
       url: song.downloadUrl?.[0]?.url || "",
-      image: song.image?.[0]?.url || placeholderImages.song,
-      previewImage: song.image?.[2]?.url || placeholderImages.song,
-    }
-    addToQueue(track)
-    toast({ title: "Added to Queue", description: `${song.name} - ${getArtists(song)}` })
-  }, [addToQueue, toast])
+      image: song.image?.[0]?.url || "/placeholder-image.jpg",
+      previewImage: song.image?.[2]?.url || "/placeholder-image.jpg",
+    };
+    addToQueue(track);
+    toast({ title: "Added to Queue", description: `${song.name} - ${getArtists(song)}` });
+  }, [addToQueue, toast]);
 
   const renderSongItem = (song: Song) => (
-
     <Card key={song.id} className="mb-2 p-0 hover:shadow-md">
       <CardContent className="flex items-center p-2">
-
         <div className="relative mr-3 flex-shrink-0">
-        <Link href={`${directoryURLs.songs}/${song.id}`} className="block">
-          <Image
-            src={song.image?.[0]?.url || "/placeholder-image.jpg"}
-            alt={song.name}
-            width={40}
-            height={40}
-            className="object-cover rounded hover:shadow-lg"
-          />
+          <Link href={`${directoryURLs.songs}/${song.id}`} className="block">
+            <Image
+              src={song.image?.[0]?.url || "/placeholder-image.jpg"}
+              alt={song.name}
+              width={40}
+              height={40}
+              className="object-cover rounded hover:shadow-lg"
+            />
           </Link>
         </div>
-
         <div className="flex-grow overflow-hidden mr-2">
-          <Link href={`${directoryURLs.songs}/${song.id}`} className="block hover:underline ">
-          <h3 className="font-semibold text-sm truncate">{song.name}</h3>
+          <Link href={`${directoryURLs.songs}/${song.id}`} className="block hover:underline">
+            <h3 className="font-semibold text-sm truncate">{song.name}</h3>
           </Link>
           <p className="text-xs text-gray-600 truncate">{getArtists(song)}</p>
         </div>
@@ -152,8 +151,7 @@ const SearchPage: React.FC = () => {
         </div>
       </CardContent>
     </Card>
-
-  )
+  );
 
   return (
     <div className="container mx-auto p-4">
@@ -201,7 +199,7 @@ const SearchPage: React.FC = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default SearchPage
+export default SearchPage;
