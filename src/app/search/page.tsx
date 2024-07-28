@@ -112,8 +112,8 @@ const SearchPage: React.FC = () => {
       name: song.name,
       artist: getArtists(song),
       url: song.downloadUrl?.[0]?.url || "",
-      image: song.image?.[0]?.url || "/placeholder-image.jpg",
-      previewImage: song.image?.[2]?.url || "/placeholder-image.jpg",
+      image: song.image?.[0]?.url || placeholderImages.song,
+      previewImage: song.image?.[2]?.url || placeholderImages.song,
     }
     addToQueue(track)
     toast({ title: "Added to Queue", description: `${song.name} - ${getArtists(song)}` })
