@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { searchSongs } from '@/lib/fetch';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,7 +34,7 @@ interface SearchSongsResponse {
   };
 }
 
-const SearchPage: React.FC = () => {
+const SearchPage: React.FC = React.memo(() => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -41,9 +42,14 @@ const SearchPage: React.FC = () => {
   const [trendingSearches] = useState<string[]>(['Latest Hits', 'Top 2024 Songs', 'Popular Artists']);
   const { toast } = useToast();
   const { currentTrack, setCurrentTrack, togglePlay, addToQueue } = useAudio();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const handleSearch = useCallback(async (query: string) => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -66,25 +72,20 @@ const SearchPage: React.FC = () => {
     }) as T;
   };
 
-  const debouncedSearch = useCallback(debounce((query: string) => handleSearch(query), 1000), [handleSearch]);
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+    }, 300),
+    [router]
+  );
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const params = new URLSearchParams(url.search);
-    const query = params.get('q');
-
+    const query = searchParams.get('q');
     if (query) {
       setSearchQuery(query);
-      params.delete('q');
-      window.history.replaceState({}, '', `${url.pathname}?${params.toString()}`);
+      handleSearch(query);
     }
-  }, []);
-
-  useEffect(() => {
-    if (searchQuery) {
-      debouncedSearch(searchQuery);
-    }
-  }, [searchQuery, debouncedSearch]);
+  }, [searchParams, handleSearch]);
 
   const getArtists = (song: Song): string => {
     const artists = song.artists.primary || song.artists.featured || song.artists.all;
@@ -114,20 +115,20 @@ const SearchPage: React.FC = () => {
       name: song.name,
       artist: getArtists(song),
       url: song.downloadUrl?.[0]?.url || "",
-      image: song.image?.[0]?.url || "/placeholder-image.jpg",
-      previewImage: song.image?.[2]?.url || "/placeholder-image.jpg",
+      image: song.image?.[0]?.url || placeholderImages.song,
+      previewImage: song.image?.[2]?.url || placeholderImages.song,
     };
     addToQueue(track);
     toast({ title: "Added to Queue", description: `${song.name} - ${getArtists(song)}` });
   }, [addToQueue, toast]);
 
-  const renderSongItem = (song: Song) => (
+  const renderSongItem = useCallback((song: Song) => (
     <Card key={song.id} className="mb-2 p-0 hover:shadow-md">
       <CardContent className="flex items-center p-2">
         <div className="relative mr-3 flex-shrink-0">
           <Link href={`${directoryURLs.songs}/${song.id}`} className="block">
             <Image
-              src={song.image?.[0]?.url || "/placeholder-image.jpg"}
+              src={song.image?.[0]?.url || placeholderImages.song}
               alt={song.name}
               width={40}
               height={40}
@@ -151,7 +152,7 @@ const SearchPage: React.FC = () => {
         </div>
       </CardContent>
     </Card>
-  );
+  ), [handlePlay, handleAddToQueue]);
 
   return (
     <div className="container mx-auto p-4">
@@ -161,7 +162,11 @@ const SearchPage: React.FC = () => {
           type="search"
           placeholder="Search for songs"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            const query = e.target.value;
+            setSearchQuery(query);
+            debouncedSearch(query);
+          }}
           className="mb-4"
         />
       </div>
@@ -190,7 +195,10 @@ const SearchPage: React.FC = () => {
                 key={index}
                 variant="secondary"
                 size="sm"
-                onClick={() => setSearchQuery(trend)}
+                onClick={() => {
+                  setSearchQuery(trend);
+                  router.push(`/search?q=${encodeURIComponent(trend)}`);
+                }}
               >
                 {trend}
               </Button>
@@ -200,6 +208,6 @@ const SearchPage: React.FC = () => {
       )}
     </div>
   );
-};
+});
 
 export default SearchPage;
