@@ -5,9 +5,9 @@ import SongList from '@/components/layout/songs-scroll-list'
 import { Separator } from '@/components/ui/separator'
 import { GetPlaylistResponse } from '@/lib/fetchTypes'
 import { decodeHtmlEntities } from '@/lib/utils'
-import { secrets } from '@/lib/config'
+import { configSecrets } from '@/lib/config'
 
-const API_URL = secrets.API_URL
+const API_URL = configSecrets.API_URL
 
 const getPlaylistByLink = (params: { link: string, page?: number, limit?: number }) => {
   const { link, page = 1, limit = 10 } = params;

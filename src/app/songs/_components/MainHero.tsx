@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
-import { PlaceHolderImages } from '@/lib/config'
+import { placeholderImages } from '@/lib/config'
 import { formatDuration } from '@/lib/utils'
 import { ListMusic, PlayCircle } from 'lucide-react'
 import Image from 'next/image'
@@ -110,8 +110,8 @@ function MainHero({ songData: song }: { songData: songType }) {
       name: song.name,
       artist: uniqueArtists().join(', '),
       url: song.downloadUrl[2].url,
-      image: song.image[0].url || PlaceHolderImages.song,
-      previewImage: song.image[2].url || PlaceHolderImages.song,
+      image: song.image[0].url || placeholderImages.song,
+      previewImage: song.image[2].url || placeholderImages.song,
     };
     if (currentTrack?.id === song.id) {
       togglePlay();
@@ -135,8 +135,8 @@ function MainHero({ songData: song }: { songData: songType }) {
       name: song.name,
       artist: uniqueArtists().join(', '),
       url: song.downloadUrl[2].url,
-      image: song.image[0].url || PlaceHolderImages.song,
-      previewImage: song.image[2].url || PlaceHolderImages.song,
+      image: song.image[0].url || placeholderImages.song,
+      previewImage: song.image[2].url || placeholderImages.song,
     };
     addToQueue(track);
     toast({
@@ -161,7 +161,7 @@ function MainHero({ songData: song }: { songData: songType }) {
               )}
               <Image
                 alt={song.name}
-                src={song.image?.[2].url || PlaceHolderImages.song}
+                src={song.image?.[2].url || placeholderImages.song}
                 width={390}
                 height={390}
                 className={`rounded-lg mx-auto h-min  md:size-96 ${imageLoading ? 'opacity-0' : ''}`}

@@ -3,7 +3,7 @@ type SocialLink = {
     url: string;
 };
 
-type SiteConfigType = {
+type SiteConfiguration = {
     siteName: string;
     tagLine: string;
     siteURL: string;
@@ -20,7 +20,7 @@ type SiteConfigType = {
     };
 };
 
-type PlaceHolderImagesType = {
+type PlaceholderImages = {
     artist: string;
     album: string;
     playlist: string;
@@ -29,8 +29,7 @@ type PlaceHolderImagesType = {
     user: string;
 };
 
-
-const SiteConfig: SiteConfigType = {
+const siteConfig: SiteConfiguration = {
     siteName: 'Kampita',
     tagLine: 'Kampita - Feel the Beat, Free the Music',
     siteURL: 'https://www.kampita.com',
@@ -38,7 +37,6 @@ const SiteConfig: SiteConfigType = {
     siteDescription: 'Kampita offers high-quality music downloads and streaming for free. Enjoy an extensive library of tracks without any cost. Feel the beat and free the music with Kampita.',
     contactEmail: 'support@kampita.com',
     copyright: '© 2024 Kampita. All rights reserved.',
-
     socialLinks: {
         x: {
             userName: 'KampitaMusic',
@@ -63,7 +61,11 @@ const SiteConfig: SiteConfigType = {
     }
 };
 
-const PlaceHolderImages: PlaceHolderImagesType = {
+export const directoryURLs = {
+    songs: `/songs` // + song.id e.g. = http://localhost:3000/songs/VmEFV51v
+};
+
+const placeholderImages: PlaceholderImages = {
     artist: '/images/placeholder/artist.jpg',
     album: '/images/placeholder/album.jpg',
     playlist: '/images/placeholder/playlist.jpg',
@@ -72,9 +74,8 @@ const PlaceHolderImages: PlaceHolderImagesType = {
     user: '/images/placeholder/user.jpg'
 };
 
-
-const secrets = {
+const configSecrets = {
     API_URL: 'https://kampita-api.vercel.app/api',
-}
+};
 
-export { SiteConfig, PlaceHolderImages, secrets };
+export { siteConfig, placeholderImages, configSecrets };

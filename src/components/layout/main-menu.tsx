@@ -34,7 +34,7 @@ function MainMenu() {
                         onChange={handleSearchChange}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                router.push(`/search?s=${searchValue}`)
+                                router.push(`/search?q=${searchValue}`)
                             }
                         }}
                         className='w-40 lg:w-96'

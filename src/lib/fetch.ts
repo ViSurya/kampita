@@ -1,6 +1,6 @@
-import { secrets } from "./config";
+import { configSecrets } from "./config";
 
-const API_URL = secrets.API_URL;
+const API_URL = configSecrets.API_URL;
 
 interface ApiResponse<T> {
   status: string;

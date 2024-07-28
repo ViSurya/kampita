@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { PlaceHolderImages } from "@/lib/config";
+import { placeholderImages } from "@/lib/config";
 import { useAudio } from "@/app/contexts/AudioContext";
 import { ListMusic, Plus } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +19,7 @@ const {
   radio: radioPlaceholder,
   song: songPlaceholder,
   user: userPlaceholder,
-} = PlaceHolderImages;
+} = placeholderImages;
 
 type Artist = {
   id?: string;

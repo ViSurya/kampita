@@ -12,7 +12,7 @@ import { decodeHtmlEntities, decodeHtmlEntitiesInJson, formatDuration } from '@/
 import MainHero from '../_components/MainHero'
 import Link from 'next/link'
 import DownloadButton from '../_components/DownloadButton'
-import { PlaceHolderImages, SiteConfig } from '@/lib/config'
+import { placeholderImages, siteConfig } from '@/lib/config'
 
 export const runtime = 'edge'
 
@@ -109,7 +109,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     }
     
     function generateSchema(song: NonNullable<GetSongByIdResponse['data']>[0]) {
-      const siteUrl = SiteConfig.siteURL;
+      const siteUrl = siteConfig.siteURL;
       const songUrl = `${siteUrl}/songs/${song.id}`;
       const audioObjects = song.downloadUrl.map(download => ({
         '@type': 'AudioObject',
@@ -129,7 +129,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         isrcCode: song.id,
         datePublished: song.releaseDate || undefined,
         genre: song.language + " " + song.type,
-        image: song.image[song.image.length - 1]?.url || PlaceHolderImages.song,
+        image: song.image[song.image.length - 1]?.url || placeholderImages.song,
         url: songUrl,
         inAlbum : {
           '@type': 'MusicAlbum',
@@ -141,7 +141,7 @@ export default async function Page({ params }: { params: { id: string } }) {
           '@id': artist.id,
           name: artist.name,
           // url: `${siteUrl}/artist/${artist.id}`,
-          image: artist.image[artist.image.length - 1]?.url || PlaceHolderImages.artist,
+          image: artist.image[artist.image.length - 1]?.url || placeholderImages.artist,
         })),
         audio: audioObjects,
       };
@@ -261,7 +261,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   return {
     title: title,
     description: description,
-    metadataBase: new URL(SiteConfig.siteURL),
+    metadataBase: new URL(siteConfig.siteURL),
     openGraph: {
       title: title,
       description: description,
