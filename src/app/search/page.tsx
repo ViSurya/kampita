@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { searchSongs } from '@/lib/fetch';
@@ -42,8 +42,6 @@ function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T
     timeoutId = setTimeout(() => func(...args), delay);
   }) as T;
 }
-
-
 
 const SearchPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -215,6 +213,12 @@ const SearchPage: React.FC = () => {
   );
 };
 
+const SearchPageWithSuspense: React.FC = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <SearchPage />
+  </Suspense>
+);
+
 SearchPage.displayName = 'SearchPage';
 
-export default SearchPage;
+export default SearchPageWithSuspense;
