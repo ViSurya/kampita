@@ -1,7 +1,8 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react';
+
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { searchSongs } from '@/lib/fetch';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -34,7 +35,17 @@ interface SearchSongsResponse {
   };
 }
 
-const SearchPage: React.FC = React.memo(() => {
+function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T {
+  let timeoutId: NodeJS.Timeout;
+  return ((...args: Parameters<T>) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  }) as T;
+}
+
+
+
+const SearchPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -43,7 +54,7 @@ const SearchPage: React.FC = React.memo(() => {
   const { toast } = useToast();
   const { currentTrack, setCurrentTrack, togglePlay, addToQueue } = useAudio();
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
@@ -64,33 +75,27 @@ const SearchPage: React.FC = React.memo(() => {
     }
   }, []);
 
-  const debounce = <T extends (...args: any[]) => void>(func: T, delay: number): T => {
-    let timeoutId: NodeJS.Timeout;
-    return ((...args: Parameters<T>) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => func(...args), delay);
-    }) as T;
-  };
-
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
-      router.push(`/search?q=${encodeURIComponent(query)}`);
-    }, 300),
-    [router]
-  );
-
   useEffect(() => {
-    const query = searchParams.get('q');
+    const query = searchParams.get('q') || '';
+    setSearchQuery(query);
     if (query) {
-      setSearchQuery(query);
       handleSearch(query);
     }
   }, [searchParams, handleSearch]);
 
-  const getArtists = (song: Song): string => {
+  const debouncedSearch = useCallback((query: string) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      handleSearch(query);
+    }, 1000); // 1000ms delay after user stops typing
+  }, [handleSearch]);
+
+  const getArtists = useCallback((song: Song): string => {
     const artists = song.artists.primary || song.artists.featured || song.artists.all;
     return artists ? artists.map(a => a.name).join(", ") : "Unknown Artist";
-  };
+  }, []);
 
   const handlePlay = useCallback((song: Song) => {
     const track = {
@@ -107,7 +112,7 @@ const SearchPage: React.FC = React.memo(() => {
       setCurrentTrack(track);
     }
     toast({ title: "Now Playing", description: `${song.name} - ${getArtists(song)}` });
-  }, [currentTrack, setCurrentTrack, togglePlay, toast]);
+  }, [currentTrack, setCurrentTrack, togglePlay, toast, getArtists]);
 
   const handleAddToQueue = useCallback((song: Song) => {
     const track = {
@@ -120,7 +125,7 @@ const SearchPage: React.FC = React.memo(() => {
     };
     addToQueue(track);
     toast({ title: "Added to Queue", description: `${song.name} - ${getArtists(song)}` });
-  }, [addToQueue, toast]);
+  }, [addToQueue, toast, getArtists]);
 
   const renderSongItem = useCallback((song: Song) => (
     <Card key={song.id} className="mb-2 p-0 hover:shadow-md">
@@ -152,7 +157,7 @@ const SearchPage: React.FC = React.memo(() => {
         </div>
       </CardContent>
     </Card>
-  ), [handlePlay, handleAddToQueue]);
+  ), [handlePlay, handleAddToQueue, getArtists]);
 
   return (
     <div className="container mx-auto p-4">
@@ -197,7 +202,7 @@ const SearchPage: React.FC = React.memo(() => {
                 size="sm"
                 onClick={() => {
                   setSearchQuery(trend);
-                  router.push(`/search?q=${encodeURIComponent(trend)}`);
+                  handleSearch(trend);
                 }}
               >
                 {trend}
@@ -208,6 +213,8 @@ const SearchPage: React.FC = React.memo(() => {
       )}
     </div>
   );
-});
+};
+
+SearchPage.displayName = 'SearchPage';
 
 export default SearchPage;
