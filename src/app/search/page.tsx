@@ -1,9 +1,8 @@
-'use client'
+'use client';
 
 import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { searchSongs } from '@/lib/fetch';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,7 +10,6 @@ import { PlayCircle, Plus, AlertCircle } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { useAudio } from '../contexts/AudioContext';
 import { Button } from '@/components/ui/button';
-import { decodeHtmlEntitiesInJson } from '@/lib/utils';
 import { directoryURLs, placeholderImages } from '@/lib/config';
 import Link from 'next/link';
 
@@ -43,7 +41,7 @@ function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T
   }) as T;
 }
 
-const SearchPage: React.FC = () => {
+const SearchComponent: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -59,12 +57,16 @@ const SearchPage: React.FC = () => {
       setSearchResults([]);
       return;
     }
+
     setIsLoading(true);
     setError(null);
     try {
-      const res: SearchSongsResponse = await searchSongs({ query, limit: 10 })
-        .then(data => decodeHtmlEntitiesInJson(data));
-      setSearchResults(res.data.results || []);
+      const res = await fetch(`/api/search?query=${encodeURIComponent(query)}&limit=10`);
+      const data: SearchSongsResponse = await res.json();
+      if (!res.ok) {
+        throw new Error('Failed to fetch songs');
+      }
+      setSearchResults(data.data.results || []);
     } catch (error) {
       console.error('Error searching songs:', error);
       setError('Failed to fetch songs. Please try again.');
@@ -74,8 +76,8 @@ const SearchPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const query = searchParams.get('q') || '';
-    setSearchQuery(query);
+    const query = searchParams.get('q');
+    setSearchQuery(query || '');
     if (query) {
       handleSearch(query);
     }
@@ -213,12 +215,12 @@ const SearchPage: React.FC = () => {
   );
 };
 
-const SearchPageWithSuspense: React.FC = () => (
-  <Suspense fallback={<div>Loading...</div>}>
-    <SearchPage />
-  </Suspense>
-);
+const SearchPage: React.FC = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchComponent />
+    </Suspense>
+  );
+};
 
-SearchPage.displayName = 'SearchPage';
-
-export default SearchPageWithSuspense;
+export default SearchPage;
