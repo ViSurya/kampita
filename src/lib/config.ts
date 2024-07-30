@@ -76,6 +76,7 @@ const placeholderImages: PlaceholderImages = {
 
 const configSecrets = {
     API_URL: 'https://kampita-api.vercel.app/api',
+    MONGO_URL: 'mongodb+srv://iamvishsurya:rMWBYG6NVmC8gcjF@cluster0.ljirn1g.mongodb.net/'
 };
 
 export { siteConfig, placeholderImages, configSecrets };

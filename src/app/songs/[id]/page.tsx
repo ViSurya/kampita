@@ -256,7 +256,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
     getArtistNames(song.artists.all);
 
   const title = `${song.name} MP3 Song Download`;
-  const description = `Download "${song.name}" MP3 song by ${artistNames} from the album "${song.album.name}". Released on ${song.releaseDate}, this track is available in ${song.language} language under the ${song.label} label. Duration: ${formatDuration(song.duration || 0)} minutes.`;
+  const description = `Download "${song.name}" MP3 Song by ${artistNames} from the album "${song.album.name}". Released on ${song.releaseDate}, this track is available in ${song.language} language under the ${song.label} label. Duration: ${formatDuration(song.duration || 0)} minutes.`;
 
   return {
     title: title,
