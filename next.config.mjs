@@ -1,15 +1,29 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    images: {
-        remotePatterns: [
+  images: {
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: 'c.saavncdn.com',
+          port: '',
+          pathname: '/**',
+        },
+      ],
+  },
+  redirects: async () => {
+      return [
           {
-            protocol: 'https',
-            hostname: 'c.saavncdn.com',
-            port: '',
-            pathname: '/**',
+              source: '/browse',
+              destination: '/',
+              permanent: false,
           },
-        ],
-      },
+          {
+              source: '/settings',
+              destination: '/',
+              permanent: false,
+          }
+      ];
+  }
 };
 
 export default nextConfig;
