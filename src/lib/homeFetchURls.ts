@@ -17,3 +17,4 @@ export const Malayalam_Viral_Hits = {
     name: 'Malayalam Viral Hits',
     url: 'https://www.jiosaavn.com/featured/malayalam-viral-hits/H-9bnU8t0nNieSJqt9HmOQ__'
 }
+

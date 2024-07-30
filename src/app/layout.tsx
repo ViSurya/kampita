@@ -47,8 +47,6 @@ export default function RootLayout({
           <AudioProvider>
             <MainMenu />
             {children}
-
-            <div className="h-[500px]"></div>
             <Player />
           </AudioProvider>
           <Toaster />

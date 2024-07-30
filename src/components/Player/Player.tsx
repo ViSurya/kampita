@@ -383,6 +383,7 @@ export function Player() {
               <DurationDisplay />
             </div>
             <Queue />
+            <div className="h-28"></div>
           </div>
         </div>
       )}
@@ -390,6 +391,8 @@ export function Player() {
   ), [currentTrack, isPlaying, togglePlay, isLoading, isExpanded]);
 
   const DesktopPlayer = useMemo(() => (
+   <>
+   <div className="h-28 lg:h-20"></div>
     <div className="hidden lg:block fixed inset-x-0 bottom-0 bg-background z-50">
       <ProgressSlider />
       <div className="flex items-center justify-between p-2 mt-1 mx-auto">
@@ -427,6 +430,7 @@ export function Player() {
         </div>
       </div>
     </div>
+    </>
   ), []);
 
   return (
