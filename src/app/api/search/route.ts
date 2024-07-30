@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { searchSongs } from '@/lib/fetch';  // Ensure the correct path to your fetch function
 import { decodeHtmlEntitiesInJson } from '@/lib/utils'; // Ensure the correct path to your utils function
 
+export const runtime = 'edge';
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('query');
