@@ -22,7 +22,10 @@ import {
   X,
   ChevronUp,
   Repeat1,
+  Link2,
+  LucideLink2,
 } from "lucide-react";
+import Link from "next/link";
 
 const formatTime = (time: number) => {
   if (isNaN(time)) return "0:00";
@@ -216,7 +219,9 @@ const TrackInfo: React.FC = () => {
         height={50}
       />
       <div className="overflow-hidden">
-        <p className="font-semibold text-sm truncate">{currentTrack.name}</p>
+        <Link href={`/songs/${currentTrack.id}`}>
+          <p className="font-semibold text-sm truncate hover:border-b-2 border-black p-0 inline">{currentTrack.name}</p>
+        </Link>
         <p className="text-xs text-gray-500 truncate">{currentTrack.artist}</p>
       </div>
     </div>
@@ -391,45 +396,45 @@ export function Player() {
   ), [currentTrack, isPlaying, togglePlay, isLoading, isExpanded]);
 
   const DesktopPlayer = useMemo(() => (
-   <>
-   <div className="h-28 lg:h-20"></div>
-    <div className="hidden lg:block fixed inset-x-0 bottom-0 bg-background z-50">
-      <ProgressSlider />
-      <div className="flex items-center justify-between p-2 mt-1 mx-auto">
-        <div className="flex-1 min-w-0 mr-4">
-          <TrackInfo />
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="border rounded-lg p-2">
-            <DurationDisplay />
+    <>
+      <div className="h-28 lg:h-20"></div>
+      <div className="hidden lg:block fixed inset-x-0 bottom-0 bg-background z-50">
+        <ProgressSlider />
+        <div className="flex items-center justify-between p-2 mt-1 mx-auto">
+          <div className="flex-1 min-w-0 mr-4">
+            <TrackInfo />
           </div>
-          <PlayerControls />
-        </div>
-        <div className="flex items-center space-x-4 flex-1 justify-end">
-          <VolumeControl />
-          <Sheet>
-            <SheetTrigger asChild>
-              
-              <Button variant="ghost" size="icon" className="hover:bg-secondary/50">
-                <TooltipProvider delayDuration={0}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <ListMusic className="h-5 w-5 lg:h-4 lg:w-4" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Open Queue
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <Queue />
-            </SheetContent>
-          </Sheet>
+          <div className="flex items-center gap-2">
+            <div className="border rounded-lg p-2">
+              <DurationDisplay />
+            </div>
+            <PlayerControls />
+          </div>
+          <div className="flex items-center space-x-4 flex-1 justify-end">
+            <VolumeControl />
+            <Sheet>
+              <SheetTrigger asChild>
+
+                <Button variant="ghost" size="icon" className="hover:bg-secondary/50">
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <ListMusic className="h-5 w-5 lg:h-4 lg:w-4" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Open Queue
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </Button>
+              </SheetTrigger>
+              <SheetContent>
+                <Queue />
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
-    </div>
     </>
   ), []);
 

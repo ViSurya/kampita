@@ -21,6 +21,11 @@ const nextConfig = {
               source: '/settings',
               destination: '/',
               permanent: false,
+          },
+          {
+              source: '/songs',
+              destination: '/',
+              permanent: false,
           }
       ];
   }

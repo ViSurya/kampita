@@ -95,7 +95,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (currentTrack && audioRef.current) {
       setIsLoading(true);
       audioRef.current.src = currentTrack.url;
-      audioRef.current.load(); // Load the audio without playing
+      audioRef.current.load();
       setIsLoading(false);
     }
   }, [currentTrack]);

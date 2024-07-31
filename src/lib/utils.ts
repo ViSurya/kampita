@@ -27,6 +27,10 @@ export const decodeHtmlEntitiesInJson = (obj: any): any => {
     const decodedObj: Record<string, any> = {};
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
+        // Check if the property is a URL that starts with "www.jiosaavn.com"
+        if (typeof obj[key] === 'string' && obj[key].startsWith("https://www.jiosaavn.com")) {
+          continue; // Skip this URL property
+        }
         decodedObj[key] = decodeHtmlEntitiesInJson(obj[key]);
       }
     }
@@ -34,6 +38,7 @@ export const decodeHtmlEntitiesInJson = (obj: any): any => {
   }
   return obj;
 };
+
 
 
 export function formatDuration(durationInSeconds: number): string {
