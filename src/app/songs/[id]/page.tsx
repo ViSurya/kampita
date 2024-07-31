@@ -90,7 +90,6 @@ const createArtistSongs = cache(async (ArtistId: string) => {
 
 
 export default async function Page({ params }: { params: { id: string } }) {
-  try {
     const song = await fetchSongCached(params.id)
     if (!song) {
       notFound()
@@ -233,10 +232,7 @@ export default async function Page({ params }: { params: { id: string } }) {
       />
       </>
     )
-  } catch (error) {
-    // console.log('Error rendering song page:', error);
-    return <div className="text-center p-8">An error occurred while loading the song. Please try again later.</div>
-  }
+
 }
 
 

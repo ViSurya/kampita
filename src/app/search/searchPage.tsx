@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,23 +33,22 @@ interface SearchSongsResponse {
   };
 }
 
-function debounce<T extends (...args: any[]) => void>(func: T, delay: number): T {
-  let timeoutId: NodeJS.Timeout;
-  return ((...args: Parameters<T>) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  }) as T;
+interface SearchComponentProps {
+  title: string;
+  initialQuery: string;
+  initialResults: Song[];
+  initialError: string | null;
 }
 
-const SearchComponent: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [searchResults, setSearchResults] = useState<Song[]>([]);
+const SearchComponent: React.FC<SearchComponentProps> = ({ initialQuery, initialResults, initialError, title }) => {
+  const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
+  const [searchResults, setSearchResults] = useState<Song[]>(initialResults);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError);
   const [trendingSearches] = useState<string[]>(['Latest Hits', 'Top 2024 Songs', 'Popular Artists']);
   const { toast } = useToast();
   const { currentTrack, setCurrentTrack, togglePlay, addToQueue } = useAudio();
-  const searchParams = useSearchParams();
+  const router = useRouter();
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearch = useCallback(async (query: string) => {
@@ -61,11 +60,16 @@ const SearchComponent: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/search?query=${encodeURIComponent(query)}&limit=10`);
-      const data: SearchSongsResponse = await res.json();
+      // Simulate network delay for testing
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const res = await fetch(`/api/search?query=${query}&limit=10`);
+
       if (!res.ok) {
         throw new Error('Failed to fetch songs');
       }
+
+      const data: SearchSongsResponse = await res.json();
       setSearchResults(data.data.results || []);
     } catch (error) {
       console.error('Error searching songs:', error);
@@ -75,22 +79,19 @@ const SearchComponent: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const query = searchParams.get('q');
-    setSearchQuery(query || '');
-    if (query) {
-      handleSearch(query);
-    }
-  }, [searchParams, handleSearch]);
-
   const debouncedSearch = useCallback((query: string) => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
     searchTimeoutRef.current = setTimeout(() => {
       handleSearch(query);
-    }, 1000); // 1000ms delay after user stops typing
-  }, [handleSearch]);
+      if (query) {
+        router.push(`/search?q=${encodeURIComponent(query)}`);
+      } else {
+        router.push('/search');
+      }
+    }, 1000);
+  }, [handleSearch, router]);
 
   const getArtists = useCallback((song: Song): string => {
     const artists = song.artists.primary || song.artists.featured || song.artists.all;
@@ -159,25 +160,29 @@ const SearchComponent: React.FC = () => {
     </Card>
   ), [handlePlay, handleAddToQueue, getArtists]);
 
+  useEffect(() => {
+    console.log('isLoading:', isLoading);
+    console.log('searchResults length:', searchResults.length);
+  }, [isLoading, searchResults]);
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Search Songs</h1>
-      <div className='lg:mx-6'>
-        <Input
-          type="search"
-          placeholder="Search for songs"
-          value={searchQuery}
-          onChange={(e) => {
-            const query = e.target.value;
-            setSearchQuery(query);
-            debouncedSearch(query);
-          }}
-          className="mb-4"
-        />
-      </div>
+      <h1 className="text-xl lg:text-2xl font-bold mb-4">{title}</h1>
+      
+      <Input
+        type="search"
+        placeholder="Search for songs"
+        value={searchQuery}
+        onChange={(e) => {
+          const query = e.target.value;
+          setSearchQuery(query);
+          debouncedSearch(query);
+        }}
+        className="mb-4"
+      />
 
       {isLoading ? (
-        <div className="space-y-2 mx-auto lg:mx-6">
+        <div className="space-y-2">
           {[...Array(5)].map((_, index) => (
             <Skeleton key={index} className="h-14 w-full" />
           ))}
@@ -188,7 +193,7 @@ const SearchComponent: React.FC = () => {
           <p className="text-sm font-semibold text-red-500">{error}</p>
         </div>
       ) : searchResults.length > 0 ? (
-        <div className='lg:grid lg:grid-cols-2 gap-x-4 lg:px-6'>
+        <div className='lg:grid lg:grid-cols-2 gap-x-4'>
           {searchResults.map(renderSongItem)}
         </div>
       ) : (
@@ -215,12 +220,4 @@ const SearchComponent: React.FC = () => {
   );
 };
 
-const SearchPage: React.FC = () => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <SearchComponent />
-    </Suspense>
-  );
-};
-
-export default SearchPage;
+export default SearchComponent;
