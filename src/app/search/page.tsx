@@ -28,6 +28,9 @@ interface SearchSongsResponse {
     };
 }
 
+export const runtime = 'edge';
+
+
 export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
     const query = searchParams.q || '';
     const title = query ? `Search results for "${query}" MP3 Song Download` : `Search Millions of Songs | ${siteConfig.siteName}`;
