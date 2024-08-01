@@ -198,7 +198,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
             <AlertCircle className="h-4 w-4 font-bold" />
             <AlertTitle className='dark:font-bold dark:text-red-500'>Error: Song Not Found</AlertTitle>
             <AlertDescription className='dark:text-red-400'>
-              We couldn't find any results for "{initialQuery}". Please try a different search query.
+              We couldn&lsquo;t find any results for &ldquo;{initialQuery}&ldquo;. Please try a different search query.
             </AlertDescription>
           </Alert>
         </div>
