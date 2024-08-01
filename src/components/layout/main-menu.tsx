@@ -34,8 +34,9 @@ function MainMenu() {
                         onChange={handleSearchChange}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                router.refresh()
+                               if (searchValue !== '') {
                                 router.push(`/search?q=${encodeURIComponent(searchValue)}`, { scroll: false });
+                               }
                             }
                         }}
                         className='w-40 lg:w-96'

@@ -12,6 +12,7 @@ import { useAudio } from '../contexts/AudioContext';
 import { Button } from '@/components/ui/button';
 import { directoryURLs, placeholderImages } from '@/lib/config';
 import Link from 'next/link';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface Song {
   id: string;
@@ -51,7 +52,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(initialError);
   const [trendingSearches] = useState<string[]>(['Latest Hits', 'Top 2024 Songs', 'Popular Artists']);
-  
+
   const { toast } = useToast();
   const { currentTrack, setCurrentTrack, togglePlay, addToQueue } = useAudio();
   const router = useRouter();
@@ -69,7 +70,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const res = await fetch(`/api/search?query=${encodeURIComponent(query)}&limit=10`);
 
@@ -101,7 +102,9 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
     searchQueryRef.current = newQuery;
-    debouncedSearch(newQuery);
+    if (searchQueryRef.current === '' || searchParams.get('q') === '') {
+      router.push('/search')
+    } else { debouncedSearch(newQuery); }
   };
 
   useEffect(() => {
@@ -116,10 +119,6 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
   }, [searchParams, performSearch]);
 
 
-  useEffect(() => {
-    const query = searchParams.get('q') || '';
-    if (query === '') router.push('/search')
-  }, [searchParams])
 
 
   const getArtists = useCallback((song: Song): string => {
@@ -136,13 +135,13 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
       image: song.image?.[0]?.url || placeholderImages.song,
       previewImage: song.image?.[2]?.url || placeholderImages.song,
     };
-    
+
     if (currentTrack?.id === song.id) {
       togglePlay();
     } else {
       setCurrentTrack(track);
     }
-    
+
     toast({ title: "Now Playing", description: `${song.name} - ${getArtists(song)}` });
   }, [currentTrack, setCurrentTrack, togglePlay, toast, getArtists]);
 
@@ -155,7 +154,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
       image: song.image?.[0]?.url || placeholderImages.song,
       previewImage: song.image?.[2]?.url || placeholderImages.song,
     };
-    
+
     addToQueue(track);
     toast({ title: "Added to Queue", description: `${song.name} - ${getArtists(song)}` });
   }, [addToQueue, toast, getArtists]);
@@ -192,10 +191,24 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
     </Card>
   ), [handlePlay, handleAddToQueue, getArtists]);
 
+  const SongNotFound = ({initialQuery}  : {initialQuery: string }) =>  (
+      <>
+        <div className='mx-auto flex items-center dark:font-semibold'>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4 font-bold" />
+            <AlertTitle className='dark:font-bold dark:text-red-500'>Error: Song Not Found</AlertTitle>
+            <AlertDescription className='dark:text-red-400'>
+              We couldn't find any results for "{initialQuery}". Please try a different search query.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </>)
+  
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-xl lg:text-2xl font-bold mb-4">{title}</h1>
-      
+
       <Input
         ref={inputRef}
         type="search"
@@ -221,27 +234,30 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
           {searchResults.map(renderSongItem)}
         </div>
       ) : (
-        <div className="mt-4">
-          <h2 className="text-lg font-semibold mb-2">Trending Searches</h2>
-          <div className="flex flex-wrap gap-2">
-            {trendingSearches.map((trend, index) => (
-              <Button
-                key={index}
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  if (inputRef.current) {
-                    inputRef.current.value = trend;
-                  }
-                  searchQueryRef.current = trend;
-                  debouncedSearch(trend);
-                }}
-              >
-                {trend}
-              </Button>
-            ))}
+        <>
+          <SongNotFound initialQuery={searchQueryRef.current} />
+          <div className="mt-4">
+            <h2 className="text-lg font-semibold mb-2">Trending Searches</h2>
+            <div className="flex flex-wrap gap-2">
+              {trendingSearches.map((trend, index) => (
+                <Button
+                  key={index}
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    if (inputRef.current) {
+                      inputRef.current.value = trend;
+                    }
+                    searchQueryRef.current = trend;
+                    debouncedSearch(trend);
+                  }}
+                >
+                  {trend}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
