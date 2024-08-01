@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,18 +40,28 @@ interface SearchComponentProps {
   initialError: string | null;
 }
 
-const SearchComponent: React.FC<SearchComponentProps> = ({ initialQuery, initialResults, initialError, title }) => {
-  const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
+
+const SearchComponent: React.FC<SearchComponentProps> = ({
+  initialQuery,
+  initialResults,
+  initialError,
+  title
+}) => {
   const [searchResults, setSearchResults] = useState<Song[]>(initialResults);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(initialError);
   const [trendingSearches] = useState<string[]>(['Latest Hits', 'Top 2024 Songs', 'Popular Artists']);
+  
   const { toast } = useToast();
   const { currentTrack, setCurrentTrack, togglePlay, addToQueue } = useAudio();
   const router = useRouter();
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchParams = useSearchParams();
 
-  const handleSearch = useCallback(async (query: string) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const searchQueryRef = useRef<string>(initialQuery);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const performSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
       return;
@@ -59,11 +69,9 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ initialQuery, initial
 
     setIsLoading(true);
     setError(null);
+    
     try {
-      // Simulate network delay for testing
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const res = await fetch(`/api/search?query=${query}&limit=10`);
+      const res = await fetch(`/api/search?query=${encodeURIComponent(query)}&limit=10`);
 
       if (!res.ok) {
         throw new Error('Failed to fetch songs');
@@ -71,8 +79,8 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ initialQuery, initial
 
       const data: SearchSongsResponse = await res.json();
       setSearchResults(data.data.results || []);
-    } catch (error) {
-      console.error('Error searching songs:', error);
+    } catch (err) {
+      console.error('Error searching songs:', err);
       setError('Failed to fetch songs. Please try again.');
     } finally {
       setIsLoading(false);
@@ -80,18 +88,39 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ initialQuery, initial
   }, []);
 
   const debouncedSearch = useCallback((query: string) => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
     }
-    searchTimeoutRef.current = setTimeout(() => {
-      handleSearch(query);
-      if (query) {
-        router.push(`/search?q=${encodeURIComponent(query)}`);
-      } else {
-        router.push('/search');
-      }
+
+    debounceTimerRef.current = setTimeout(() => {
+      performSearch(query);
+      router.push(`/search?q=${encodeURIComponent(query)}`, { scroll: false });
     }, 1000);
-  }, [handleSearch, router]);
+  }, [performSearch, router]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newQuery = e.target.value;
+    searchQueryRef.current = newQuery;
+    debouncedSearch(newQuery);
+  };
+
+  useEffect(() => {
+    const query = searchParams.get('q') || '';
+    if (query !== searchQueryRef.current) {
+      searchQueryRef.current = query;
+      if (inputRef.current) {
+        inputRef.current.value = query;
+      }
+      performSearch(query);
+    }
+  }, [searchParams, performSearch]);
+
+
+  useEffect(() => {
+    const query = searchParams.get('q') || '';
+    if (query === '') router.push('/search')
+  }, [searchParams])
+
 
   const getArtists = useCallback((song: Song): string => {
     const artists = song.artists.primary || song.artists.featured || song.artists.all;
@@ -107,11 +136,13 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ initialQuery, initial
       image: song.image?.[0]?.url || placeholderImages.song,
       previewImage: song.image?.[2]?.url || placeholderImages.song,
     };
+    
     if (currentTrack?.id === song.id) {
       togglePlay();
     } else {
       setCurrentTrack(track);
     }
+    
     toast({ title: "Now Playing", description: `${song.name} - ${getArtists(song)}` });
   }, [currentTrack, setCurrentTrack, togglePlay, toast, getArtists]);
 
@@ -124,6 +155,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ initialQuery, initial
       image: song.image?.[0]?.url || placeholderImages.song,
       previewImage: song.image?.[2]?.url || placeholderImages.song,
     };
+    
     addToQueue(track);
     toast({ title: "Added to Queue", description: `${song.name} - ${getArtists(song)}` });
   }, [addToQueue, toast, getArtists]);
@@ -160,24 +192,16 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ initialQuery, initial
     </Card>
   ), [handlePlay, handleAddToQueue, getArtists]);
 
-  useEffect(() => {
-    console.log('isLoading:', isLoading);
-    console.log('searchResults length:', searchResults.length);
-  }, [isLoading, searchResults]);
-
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-xl lg:text-2xl font-bold mb-4">{title}</h1>
       
       <Input
+        ref={inputRef}
         type="search"
         placeholder="Search for songs"
-        value={searchQuery}
-        onChange={(e) => {
-          const query = e.target.value;
-          setSearchQuery(query);
-          debouncedSearch(query);
-        }}
+        defaultValue={searchQueryRef.current}
+        onChange={handleInputChange}
         className="mb-4"
       />
 
@@ -206,8 +230,11 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ initialQuery, initial
                 variant="secondary"
                 size="sm"
                 onClick={() => {
-                  setSearchQuery(trend);
-                  handleSearch(trend);
+                  if (inputRef.current) {
+                    inputRef.current.value = trend;
+                  }
+                  searchQueryRef.current = trend;
+                  debouncedSearch(trend);
                 }}
               >
                 {trend}

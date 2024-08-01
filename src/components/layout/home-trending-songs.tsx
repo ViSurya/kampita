@@ -91,7 +91,7 @@ const TrendingSongs: React.FC<TrendingSongsProps> = ({ songs }) => {
     } else {
       setCurrentTrack(track);
     }
-    toast({ title: "Now Playing", description: `${song.name} - ${getArtists(song)}` });
+    toast({ title: "Now Playing", description: `${song.name}` });
   }, [currentTrack, setCurrentTrack, togglePlay, toast, getArtists]);
 
   const handleAddToQueue = useCallback((song: TrendingSong) => {
@@ -104,7 +104,7 @@ const TrendingSongs: React.FC<TrendingSongsProps> = ({ songs }) => {
       previewImage: song.image?.[2]?.link || placeholderImages.song,
     };
     addToQueue(track);
-    toast({ title: "Added to Queue", description: `${song.name} - ${getArtists(song)}` });
+    toast({ title: "Added to Queue", description: `${song.name}` });
   }, [addToQueue, toast, getArtists]);
 
   return (
