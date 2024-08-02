@@ -9,19 +9,61 @@ import { Player } from "@/components/Player/Player";
 import { AudioProvider } from "./contexts/AudioContext";
 import { Toaster } from "@/components/ui/toaster";
 
-
 const globalFont = Signika_Negative({
   subsets: ["vietnamese"],
-  weight: ["400", "700"], // You can add different weights if needed
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Kampita",
-    default: "Kampita - Feel the Beat, Free the Music",
+    template: "%s | PagalWorld",
+    default: "PagalWorld - Download or Stream Millions of Songs for Free",
   },
-  description: "Kampita Music: Download and stream unlimited songs for free. Instant access to millions of tracks across all genres. No fees, no limits - just pure music enjoyment.",
+  description: "PagalWorld offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from PagalWorld.",
+  keywords: [
+    "PagalWorld",
+    "Music Downloads",
+    "Free Song Download",
+    "PagalWorld Song Download",
+    "MP3 Download",
+    "Latest Music",
+    "Bollywood Songs",
+    "Download Songs",
+    "Hindi Songs",
+    "Music Streaming",
+    "Top Songs",
+    "Free MP3 Song Download",
+    "PagalWorld Music"
+  ],
+  openGraph: {
+    title: "PagalWorld - Download or Stream Millions of Songs for Free",
+    description: "PagalWorld offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from PagalWorld.",
+    url: "https://pagal-world.site",
+    type: "website",
+    // images: [
+    //   {
+    //     url: "https://pagal-world.site/images/og-image.jpg",
+    //     width: 800,
+    //     height: 600,
+    //     alt: "PagalWorld"
+    //   }
+    // ]
+  },
 };
+
+const siteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": "https://pagal-world.site",
+  "name": "PagalWorld",
+  "description": "PagalWorld offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from PagalWorld.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://pagal-world.site/search?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+
 
 export default function RootLayout({
   children,
@@ -30,7 +72,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <head />
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(siteSchema)
+          }}
+        />
+      </head>
       <body
         className={cn(
           "min-h-screen bg-background antialiased",

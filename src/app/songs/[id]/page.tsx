@@ -262,7 +262,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
       title: title,
       description: description,
       type: 'music.song',
-      url: `/song/${song.id}`,
+      url: `/songs/${song.id}`,
       images: [
         {
           url: song.image[2].url,
@@ -279,7 +279,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
       images: song.downloadUrl?.[4].url || '',
     },
     alternates: {
-      canonical: `/song/${song.id}`,
+      canonical: `/songs/${song.id}`,
     },
     robots: {
       index: true,

@@ -30,33 +30,33 @@ type PlaceholderImages = {
 };
 
 const siteConfig: SiteConfiguration = {
-    siteName: 'Kampita',
-    tagLine: 'Kampita - Feel the Beat, Free the Music',
-    siteURL: 'https://www.kampita.com',
-    siteOwner: 'Vishal Kaleria',
-    siteDescription: 'Kampita offers high-quality music downloads and streaming for free. Enjoy an extensive library of tracks without any cost. Feel the beat and free the music with Kampita.',
-    contactEmail: 'support@kampita.com',
-    copyright: '© 2024 Kampita. All rights reserved.',
+    siteName: 'PagalWorld',
+    tagLine: 'PagalWorld - Your Ultimate Music Download Destination',
+    siteURL: 'https://pagal-world.site',
+    siteOwner: 'Vishal Kalaria',
+    siteDescription: 'PagalWorld offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from PagalWorld.',
+    contactEmail: 'support@pagal-world.site',
+    copyright: '© 2024 PagalWorld. All rights reserved.',
     socialLinks: {
         x: {
-            userName: 'KampitaMusic',
-            url: 'https://x.com/KampitaMusic'
+            userName: 'PagalWorldMusic',
+            url: 'https://x.com/PagalWorldMusic'
         },
         facebook: {
-            userName: 'KampitaMusic',
-            url: 'https://www.facebook.com/KampitaMusic'
+            userName: 'PagalWorldMusic',
+            url: 'https://www.facebook.com/PagalWorldMusic'
         },
         instagram: {
-            userName: 'KampitaMusic',
-            url: 'https://www.instagram.com/KampitaMusic'
+            userName: 'PagalWorldMusic',
+            url: 'https://www.instagram.com/PagalWorldMusic'
         },
         youtube: {
-            userName: 'KampitaMusic',
-            url: 'https://www.youtube.com/KampitaMusic'
+            userName: 'PagalWorldMusic',
+            url: 'https://www.youtube.com/PagalWorldMusic'
         },
         linkedin: {
-            userName: 'KampitaMusic',
-            url: 'https://www.linkedin.com/company/KampitaMusic'
+            userName: 'PagalWorldMusic',
+            url: 'https://www.linkedin.com/company/PagalWorldMusic'
         }
     }
 };
