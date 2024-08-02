@@ -204,7 +204,6 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
         </div>
       </>)
   
-
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-xl lg:text-2xl font-bold mb-4">{title}</h1>
@@ -231,36 +230,34 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
         </div>
       ) : searchResults.length > 0 ? (
         <div className='lg:grid lg:grid-cols-2 gap-x-4'>
-          {searchResults.map(renderSongItem)}
+          {searchResults.length !== 0 ? searchResults.map(renderSongItem) : <SongNotFound initialQuery={searchQueryRef.current} />}
+
         </div>
       ) : (
-        <>
-          <SongNotFound initialQuery={searchQueryRef.current} />
-          <div className="mt-4">
-            <h2 className="text-lg font-semibold mb-2">Trending Searches</h2>
-            <div className="flex flex-wrap gap-2">
-              {trendingSearches.map((trend, index) => (
-                <Button
-                  key={index}
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    if (inputRef.current) {
-                      inputRef.current.value = trend;
-                    }
-                    searchQueryRef.current = trend;
-                    debouncedSearch(trend);
-                  }}
-                >
-                  {trend}
-                </Button>
-              ))}
-            </div>
+        <div className="mt-4">
+          <h2 className="text-lg font-semibold mb-2">Trending Searches</h2>
+          <div className="flex flex-wrap gap-2">
+            {trendingSearches.map((trend, index) => (
+              <Button
+                key={index}
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  if (inputRef.current) {
+                    inputRef.current.value = trend;
+                  }
+                  searchQueryRef.current = trend;
+                  debouncedSearch(trend);
+                }}
+              >
+                {trend}
+              </Button>
+            ))}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
-};
+}
 
 export default SearchComponent;
