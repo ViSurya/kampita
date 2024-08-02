@@ -17,19 +17,55 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 interface Song {
   id: string;
   name: string;
+  subtitle: string;
   type: string;
-  year?: string;
-  artists: {
-    primary?: Array<{ id: string; name: string; }>;
-    featured?: Array<{ id: string; name: string; }>;
-    all?: Array<{ id: string; name: string; }>;
+  url: string;
+  image: Array<{ quality: string; link: string; }>;
+  language: string;
+  year: string;
+  play_count: number;
+  explicit: boolean;
+  list_count: number;
+  list_type: string;
+  list: string;
+  more_info?: {
+    primary_artists: string;
+    singers: string;
   };
-  image?: Array<{ quality: string; url: string; }>;
-  downloadUrl?: Array<{ quality: string; url: string; }>;
+  artist_map: {
+    primary_artists: Array<{ id: string; name: string; url: string; role: string; }>;
+    featured_artists: Array<{ id: string; name: string; url: string; role: string; }>;
+    artists: Array<{ id: string; name: string; url: string; role: string; }>;
+  };
+  album: string;
+  album_id: string;
+  album_url: string;
+  label: string;
+  origin: string;
+  is_dolby_content: boolean;
+  '320kbps': boolean;
+  download_url: Array<{ quality: string; link: string; }>;
+  duration: number;
+  rights: {
+    code: string;
+    cacheable: string;
+    delete_cached_object: string;
+    reason: string;
+  };
+  has_lyrics: boolean;
+  lyrics_snippet: string;
+  starred: boolean;
+  copyright_text: string;
+  vcode: string;
+  vlink: string;
 }
 
 interface SearchSongsResponse {
+  status: string;
+  message: string;
   data: {
+    total: number;
+    start: number;
     results: Song[];
   };
 }
@@ -40,7 +76,6 @@ interface SearchComponentProps {
   initialResults: Song[];
   initialError: string | null;
 }
-
 
 const SearchComponent: React.FC<SearchComponentProps> = ({
   initialQuery,
@@ -72,7 +107,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
     setError(null);
 
     try {
-      const res = await fetch(`/api/search?query=${encodeURIComponent(query)}&limit=10`);
+      const res = await fetch(`https://api.kampitamusic.workers.dev/search/songs?q=${encodeURIComponent(query)}&limit=10`);
 
       if (!res.ok) {
         throw new Error('Failed to fetch songs');
@@ -118,12 +153,8 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
     }
   }, [searchParams, performSearch]);
 
-
-
-
   const getArtists = useCallback((song: Song): string => {
-    const artists = song.artists.primary || song.artists.featured || song.artists.all;
-    return artists ? artists.map(a => a.name).join(", ") : "Unknown Artist";
+    return song.subtitle || "Unknown Artist";
   }, []);
 
   const handlePlay = useCallback((song: Song) => {
@@ -131,9 +162,9 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
       id: song.id,
       name: song.name,
       artist: getArtists(song),
-      url: song.downloadUrl?.[2]?.url || "",
-      image: song.image?.[0]?.url || placeholderImages.song,
-      previewImage: song.image?.[2]?.url || placeholderImages.song,
+      url: song.download_url?.[2]?.link || "",
+      image: song.image?.[0]?.link || placeholderImages.song,
+      previewImage: song.image?.[2]?.link || placeholderImages.song,
     };
 
     if (currentTrack?.id === song.id) {
@@ -150,9 +181,9 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
       id: song.id,
       name: song.name,
       artist: getArtists(song),
-      url: song.downloadUrl?.[0]?.url || "",
-      image: song.image?.[0]?.url || placeholderImages.song,
-      previewImage: song.image?.[2]?.url || placeholderImages.song,
+      url: song.download_url?.[0]?.link || "",
+      image: song.image?.[0]?.link || placeholderImages.song,
+      previewImage: song.image?.[2]?.link || placeholderImages.song,
     };
 
     addToQueue(track);
@@ -165,7 +196,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
         <div className="relative mr-3 flex-shrink-0">
           <Link prefetch={false} href={`${directoryURLs.songs}/${song.id}`} className="block">
             <Image
-              src={song.image?.[0]?.url || placeholderImages.song}
+              src={song.image?.[0]?.link || placeholderImages.song}
               alt={song.name}
               width={40}
               height={40}
@@ -231,7 +262,6 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
       ) : searchResults.length > 0 ? (
         <div className='lg:grid lg:grid-cols-2 gap-x-4'>
           {searchResults.length !== 0 ? searchResults.map(renderSongItem) : <SongNotFound initialQuery={searchQueryRef.current} />}
-
         </div>
       ) : (
         <div className="mt-4">

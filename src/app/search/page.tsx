@@ -11,25 +11,60 @@ interface SearchPageProps {
 interface Song {
     id: string;
     name: string;
+    subtitle: string;
     type: string;
-    year?: string;
-    artists: {
-        primary?: Array<{ id: string; name: string; }>;
-        featured?: Array<{ id: string; name: string; }>;
-        all?: Array<{ id: string; name: string; }>;
+    url: string;
+    image: Array<{ quality: string; link: string; }>;
+    language: string;
+    year: string;
+    play_count: number;
+    explicit: boolean;
+    list_count: number;
+    list_type: string;
+    list: string;
+    more_info?: {
+        primary_artists: string;
+        singers: string;
     };
-    image?: Array<{ quality: string; url: string; }>;
-    downloadUrl?: Array<{ quality: string; url: string; }>;
+    artist_map: {
+        primary_artists: Array<{ id: string; name: string; url: string; role: string; }>;
+        featured_artists: Array<{ id: string; name: string; url: string; role: string; }>;
+        artists: Array<{ id: string; name: string; url: string; role: string; }>;
+    };
+    album: string;
+    album_id: string;
+    album_url: string;
+    label: string;
+    origin: string;
+    is_dolby_content: boolean;
+    '320kbps': boolean;
+    download_url: Array<{ quality: string; link: string; }>;
+    duration: number;
+    rights: {
+        code: string;
+        cacheable: string;
+        delete_cached_object: string;
+        reason: string;
+    };
+    has_lyrics: boolean;
+    lyrics_snippet: string;
+    starred: boolean;
+    copyright_text: string;
+    vcode: string;
+    vlink: string;
 }
 
 interface SearchSongsResponse {
+    status: string;
+    message: string;
     data: {
+        total: number;
+        start: number;
         results: Song[];
     };
 }
 
 export const runtime = 'edge';
-
 
 export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
     const query = searchParams.q || '';
@@ -80,35 +115,39 @@ const searchSchema = {
     }
 };
 
-
 export default async function SearchPage({ searchParams }: SearchPageProps) {
     let searchResults: Song[] = [];
     let error: string | null = null;
 
     async function fetchSearchResults(query: string): Promise<Song[]> {
-        const apiUrl = 'http://localhost:3000/api/search';
+        const apiUrl = 'https://api.kampitamusic.workers.dev/search/songs';
         const url = new URL(apiUrl);
-        url.searchParams.append('query', query);
+        url.searchParams.append('q', query);
         url.searchParams.append('limit', '10');
 
-        const res = await fetch(url.toString(), {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            next: { revalidate: 60 }, // Revalidate cache every 60 seconds
-        });
+        try {
+            const res = await fetch(url.toString(), {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                next: { revalidate: 60 }, // Revalidate cache every 60 seconds
+            });
 
+            if (!res.ok) {
+                throw new Error('Failed to fetch search results');
+            }
 
-
-        const data: SearchSongsResponse = await res.json();
-        return data.data.results;
+            const data: SearchSongsResponse = await res.json();
+            return data.data.results;
+        } catch (err) {
+            console.error('Error fetching search results:', err);
+            error = 'Failed to fetch search results. Please try again.';
+            return [];
+        }
     }
 
-
     if (searchParams.q) {
-    
-            searchResults = await fetchSearchResults(searchParams.q);
-        
+        searchResults = await fetchSearchResults(searchParams.q);
     }
 
     return (
