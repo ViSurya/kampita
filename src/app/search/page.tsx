@@ -98,9 +98,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             next: { revalidate: 60 }, // Revalidate cache every 60 seconds
         });
 
-        if (!res.ok) {
-            throw new Error('Failed to fetch songs');
-        }
+
 
         const data: SearchSongsResponse = await res.json();
         return data.data.results;
@@ -108,12 +106,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
 
     if (searchParams.q) {
-        try {
+    
             searchResults = await fetchSearchResults(searchParams.q);
-        } catch (err) {
-            console.error('Error fetching search results:', err);
-            error = 'Failed to fetch search results. Please try again.';
-        }
+        
     }
 
     return (
