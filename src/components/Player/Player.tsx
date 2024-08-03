@@ -34,6 +34,8 @@ const formatTime = (time: number) => {
   return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 };
 
+
+
 const PlayerControls: React.FC = () => {
   const {
     isPlaying,
@@ -339,6 +341,7 @@ const DurationDisplay: React.FC = () => {
 export function Player() {
   const { currentTrack, isPlaying, togglePlay, isLoading } = useAudio();
   const [isExpanded, setIsExpanded] = useState(false);
+  const {hasAudioData} = useAudio()
 
   const MobilePlayer = useMemo(() => (
     <div className="lg:hidden">
@@ -437,6 +440,8 @@ export function Player() {
       </div>
     </>
   ), []);
+
+  if (!hasAudioData) return null
 
   return (
     <>
