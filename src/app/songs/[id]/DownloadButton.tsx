@@ -1,4 +1,4 @@
-'use client';
+   'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -8,12 +8,12 @@ interface DownloadButtonProps {
   downloadUrl: string;
 }
 
-export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
+const DownloadButton = ({ downloadUrl }: DownloadButtonProps) => {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
   const controller = useRef<AbortController | null>(null);
 
-  const getFileNameFromUrl = (url: string) => {
+  const getFileNameFromUrl = (url: string): string => {
     const urlParts = url.split('/');
     return urlParts[urlParts.length - 1];
   };
@@ -55,7 +55,7 @@ export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
       document.body.removeChild(link);
 
       URL.revokeObjectURL(url);
-    } catch (error) {
+    } catch (error: any) {
       if (error.name !== 'AbortError') {
         console.error('Download failed:', error);
       }
@@ -82,4 +82,6 @@ export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
       )}
     </div>
   );
-}
+};
+
+export default DownloadButton;
