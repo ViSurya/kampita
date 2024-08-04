@@ -11,7 +11,7 @@ interface DownloadButtonProps {
 export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const controller = useRef<AbortController>(new AbortController());
+  const controller = useRef<AbortController | null>(null);
 
   const getFileNameFromUrl = (url: string) => {
     const urlParts = url.split('/');
@@ -21,6 +21,7 @@ export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
   const handleDownload = async () => {
     setDownloading(true);
     setProgress(0);
+    controller.current = new AbortController();
 
     try {
       const response = await fetch(downloadUrl, { signal: controller.current.signal });
@@ -55,23 +56,25 @@ export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
 
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download failed:', error);
+      if (error.name !== 'AbortError') {
+        console.error('Download failed:', error);
+      }
     } finally {
       setDownloading(false);
       setProgress(0);
-      controller.current.abort();
+      controller.current = null;
     }
   };
 
   useEffect(() => {
-    return () => controller.current.abort();
+    return () => controller.current?.abort();
   }, []);
 
   return (
     <div className="w-full">
       {downloading ? (
         <div className="w-full">
-          <Progress value={progress} className="w-[100px] mb-2" />
+          <Progress value={progress} className="w-full mb-2" />
           <p className="text-center text-sm">{progress}%</p>
         </div>
       ) : (
