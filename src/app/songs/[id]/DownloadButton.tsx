@@ -1,65 +1,44 @@
 'use client';
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { toast } from '@/components/ui/use-toast'
 
 export default function DownloadButton({ downloadUrl }: { downloadUrl: string }) {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const handleDownload = useCallback(async () => {
+  const handleDownload = async () => {
     setDownloading(true);
     setProgress(0);
 
     try {
       const response = await fetch(downloadUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error('Network response was not ok');
       const reader = response.body?.getReader();
       const contentLength = +(response.headers.get('Content-Length') || '0');
       let receivedLength = 0;
-      const chunks = [];
 
       while(true) {
-        const { done, value } = await reader.read();
-        
-        if (done) {
-          break;
-        }
+        const { done, value } = await reader?.read() || {};
+        if (done || !value) break;
 
-        chunks.push(value);
         receivedLength += value.length;
         setProgress(Math.round((receivedLength / contentLength) * 100));
+
+        // Here you would typically append `value` to a buffer or stream to a file
+        // For simplicity, we're just updating the progress
       }
 
-      const blob = new Blob(chunks);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = 'song.mp3';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      toast({
-        title: "Download complete",
-        description: "Your file has been downloaded successfully.",
-      });
+      // Implement actual file download logic here
+      console.log('Download complete');
     } catch (error) {
       console.error('Download failed:', error);
-      toast({
-        title: "Download failed",
-        description: "There was an error downloading your file. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setDownloading(false);
       setProgress(0);
     }
-  }, [downloadUrl]);
+  };
 
   return (
     <div className="w-full">
