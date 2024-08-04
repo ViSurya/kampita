@@ -14,6 +14,7 @@ interface Track {
 interface AudioContextType {
   isPlaying: boolean;
   isLoading: boolean;
+  hasAudioData: boolean;
   currentTime: number;
   duration: number;
   volume: number;
@@ -312,11 +313,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [currentTrack]);
 
+  const hasAudioData = Boolean(currentTrack || queue.length > 0 || playHistory.length > 0);
+
   return (
     <AudioContext.Provider
       value={{
         isPlaying,
         isLoading,
+        hasAudioData, 
         currentTime,
         duration,
         volume,
