@@ -12,7 +12,7 @@ import MainHero from '../_components/MainHero'
 import { placeholderImages, siteConfig } from '@/lib/config'
 import dynamic from 'next/dynamic'
 
-const DownloadButton = dynamic(() => import('@/components/DownloadButton'), { ssr: false })
+const DownloadButton = dynamic(() => import('./DownloadButton'), { ssr: false })
 
 export const runtime = 'edge'
 
