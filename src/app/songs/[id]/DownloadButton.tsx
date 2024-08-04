@@ -1,44 +1,66 @@
-'use client';
+import { useState, useRef, useEffect } from 'react';
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
+interface DownloadButtonProps {
+  downloadUrl: string;
+}
 
-export default function DownloadButton({ downloadUrl }: { downloadUrl: string }) {
+function DownloadButton({ downloadUrl }: DownloadButtonProps) {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const controller = useRef<AbortController>(new AbortController());
 
   const handleDownload = async () => {
     setDownloading(true);
     setProgress(0);
 
     try {
-      const response = await fetch(downloadUrl);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const reader = response.body?.getReader();
-      const contentLength = +(response.headers.get('Content-Length') || '0');
-      let receivedLength = 0;
-
-      while(true) {
-        const { done, value } = await reader?.read() || {};
-        if (done || !value) break;
-
-        receivedLength += value.length;
-        setProgress(Math.round((receivedLength / contentLength) * 100));
-
-        // Here you would typically append `value` to a buffer or stream to a file
-        // For simplicity, we're just updating the progress
+      const response = await fetch(downloadUrl, { signal: controller.current.signal });
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
       }
 
-      // Implement actual file download logic here
-      console.log('Download complete');
+      const contentDispositionHeader = response.headers.get('Content-Disposition');
+      const filename = contentDispositionHeader ? /filename="?([^"]+)"?/.exec(contentDispositionHeader)?.[1] : null;
+
+      const contentLength = Number(response.headers.get('Content-Length') || 0);
+      let receivedLength = 0;
+
+      const reader = response.body?.getReader();
+      const chunks: Uint8Array[] = [];
+
+      if (!reader) {
+        throw new Error('Could not read response body');
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        receivedLength += value.length;
+        setProgress(Math.round((receivedLength / contentLength) * 100));
+      }
+
+      const blob = new Blob(chunks);
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename || 'download'; // Use original filename or default
+      link.click();
+
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download failed:', error);
     } finally {
       setDownloading(false);
       setProgress(0);
+      controller.current.abort();
     }
   };
+
+  useEffect(() => {
+    return () => controller.current.abort();
+  }, []);
 
   return (
     <div className="w-full">
@@ -53,3 +75,5 @@ export default function DownloadButton({ downloadUrl }: { downloadUrl: string })
     </div>
   );
 }
+
+export default DownloadButton;
