@@ -1,12 +1,14 @@
-"use client"
+'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 interface DownloadButtonProps {
   downloadUrl: string;
 }
 
-function DownloadButton({ downloadUrl }: DownloadButtonProps) {
+export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
   const controller = useRef<AbortController>(new AbortController());
@@ -17,12 +19,11 @@ function DownloadButton({ downloadUrl }: DownloadButtonProps) {
 
     try {
       const response = await fetch(downloadUrl, { signal: controller.current.signal });
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.statusText}`);
-      }
+      if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
 
       const contentDispositionHeader = response.headers.get('Content-Disposition');
-      const filename = contentDispositionHeader ? /filename="?([^"]+)"?/.exec(contentDispositionHeader)?.[1] : null;
+      const filenameMatch = contentDispositionHeader ? /filename="?([^"]+)"?/.exec(contentDispositionHeader) : null;
+      const filename = filenameMatch ? filenameMatch[1] : 'download';
 
       const contentLength = Number(response.headers.get('Content-Length') || 0);
       let receivedLength = 0;
@@ -30,9 +31,7 @@ function DownloadButton({ downloadUrl }: DownloadButtonProps) {
       const reader = response.body?.getReader();
       const chunks: Uint8Array[] = [];
 
-      if (!reader) {
-        throw new Error('Could not read response body');
-      }
+      if (!reader) throw new Error('Could not read response body');
 
       while (true) {
         const { done, value } = await reader.read();
@@ -47,8 +46,10 @@ function DownloadButton({ downloadUrl }: DownloadButtonProps) {
 
       const link = document.createElement('a');
       link.href = url;
-      link.download = filename || 'download'; // Use original filename or default
+      link.download = filename;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
 
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -77,5 +78,3 @@ function DownloadButton({ downloadUrl }: DownloadButtonProps) {
     </div>
   );
 }
-
-export default DownloadButton;
