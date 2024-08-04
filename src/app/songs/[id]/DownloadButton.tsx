@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { toast } from '@/components/ui/use-toast'
 
-export function DownloadButton({ downloadUrl }: { downloadUrl: string }) {
+export default function DownloadButton({ downloadUrl }: { downloadUrl: string }) {
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
 
