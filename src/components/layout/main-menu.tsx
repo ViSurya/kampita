@@ -23,7 +23,7 @@ function MainMenu() {
                 <Link href={'/'}>
                     <div className='flex gap-2 my-2 text-lg lg:text-xl'>
                         <ListMusic className='size-6 lg:size-7' />
-                        <span className='font-bold' >Kampita</span>
+                        <span className='font-bold' >PagalWorld</span>
                     </div>
                 </Link>
                 <div className='lg:flex hidden'>
