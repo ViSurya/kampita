@@ -1,18 +1,18 @@
-import { useState, useEffect, useCallback, cache } from 'react'
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { SongCardProps } from '@/components/layout/song-card'
 import SongList from '@/components/layout/songs-scroll-list'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Progress } from '@/components/ui/progress'
-import { toast } from '@/components/ui/use-toast'
 import { getArtistSongs, getSongById, getSongSuggestionsById } from '@/lib/fetch'
 import { GetArtistSongsResponse, GetSongByIdResponse, GetSongSuggestionsByIdResponse } from '@/lib/fetchTypes'
 import { decodeHtmlEntities, decodeHtmlEntitiesInJson, formatDuration } from '@/lib/utils'
 import MainHero from '../_components/MainHero'
 import { placeholderImages, siteConfig } from '@/lib/config'
+import dynamic from 'next/dynamic'
+
+const DownloadButton = dynamic(() => import('@/components/DownloadButton'), { ssr: false })
 
 export const runtime = 'edge'
 
@@ -81,76 +81,6 @@ const createArtistSongs = cache(async (ArtistId: string) => {
     song_file: song.downloadUrl?.[2].url
   }));
 })
-
-function DownloadButton({ downloadUrl }: { downloadUrl: string }) {
-  const [downloading, setDownloading] = useState(false);
-  const [progress, setProgress] = useState(0);
-
-  const handleDownload = useCallback(async () => {
-    setDownloading(true);
-    setProgress(0);
-
-    try {
-      const response = await fetch(downloadUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const reader = response.body?.getReader();
-      const contentLength = +(response.headers.get('Content-Length') || '0');
-      let receivedLength = 0;
-      const chunks = [];
-
-      while(true) {
-        const { done, value } = await reader.read();
-        
-        if (done) {
-          break;
-        }
-
-        chunks.push(value);
-        receivedLength += value.length;
-        setProgress(Math.round((receivedLength / contentLength) * 100));
-      }
-
-      const blob = new Blob(chunks);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = 'song.mp3';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      toast({
-        title: "Download complete",
-        description: "Your file has been downloaded successfully.",
-      });
-    } catch (error) {
-      console.error('Download failed:', error);
-      toast({
-        title: "Download failed",
-        description: "There was an error downloading your file. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setDownloading(false);
-      setProgress(0);
-    }
-  }, [downloadUrl]);
-
-  return (
-    <div className="w-full">
-      {downloading ? (
-        <div className="w-full">
-          <Progress value={progress} className="w-[100px] mb-2" />
-          <p className="text-center text-sm">{progress}%</p>
-        </div>
-      ) : (
-        <Button onClick={handleDownload}>Download</Button>
-      )}
-    </div>
-  );
-}
 
 export default async function Page({ params }: { params: { id: string } }) {
   const song = await fetchSongCached(params.id)
@@ -346,4 +276,4 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
       'og:audio': song.downloadUrl?.[4].url || '',
     },
   };
-  }
+}
