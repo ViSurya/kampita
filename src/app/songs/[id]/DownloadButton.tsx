@@ -13,6 +13,11 @@ export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
   const [progress, setProgress] = useState(0);
   const controller = useRef<AbortController>(new AbortController());
 
+  const getFileNameFromUrl = (url: string) => {
+    const urlParts = url.split('/');
+    return urlParts[urlParts.length - 1];
+  };
+
   const handleDownload = async () => {
     setDownloading(true);
     setProgress(0);
@@ -21,10 +26,7 @@ export default function DownloadButton({ downloadUrl }: DownloadButtonProps) {
       const response = await fetch(downloadUrl, { signal: controller.current.signal });
       if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
 
-      const contentDispositionHeader = response.headers.get('Content-Disposition');
-      const filenameMatch = contentDispositionHeader ? /filename="?([^"]+)"?/.exec(contentDispositionHeader) : null;
-      const filename = filenameMatch ? filenameMatch[1] : 'download';
-
+      const filename = getFileNameFromUrl(downloadUrl);
       const contentLength = Number(response.headers.get('Content-Length') || 0);
       let receivedLength = 0;
 
