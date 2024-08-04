@@ -1,4 +1,4 @@
-import { cache } from 'react'
+import { useState, useEffect, useCallback, cache } from 'react'
 import { notFound } from 'next/navigation'
 import { SongCardProps } from '@/components/layout/song-card'
 import SongList from '@/components/layout/songs-scroll-list'
@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Progress } from '@/components/ui/progress'
+import { toast } from '@/components/ui/use-toast'
 import { getArtistSongs, getSongById, getSongSuggestionsById } from '@/lib/fetch'
 import { GetArtistSongsResponse, GetSongByIdResponse, GetSongSuggestionsByIdResponse } from '@/lib/fetchTypes'
 import { decodeHtmlEntities, decodeHtmlEntitiesInJson, formatDuration } from '@/lib/utils'
 import MainHero from '../_components/MainHero'
-import Link from 'next/link'
-import DownloadButton from '../_components/DownloadButton'
 import { placeholderImages, siteConfig } from '@/lib/config'
 
 export const runtime = 'edge'
@@ -22,7 +22,6 @@ const fetchSongCached = cache(async (id: string) => {
     const response: GetSongByIdResponse = await decodeHtmlEntitiesInJson(req)
     return response.data?.[0]
   } catch (error) {
-    // console.log('Error fetching song with lyrics:', error);
     try {
       const req = await getSongById({ id: id, lyrics: false })
       const response: GetSongByIdResponse = await decodeHtmlEntitiesInJson(req)
@@ -67,10 +66,6 @@ const createSongSuggestions = cache(async (songId: string) => {
   })) || [];
 })
 
-
-
-
-
 const createArtistSongs = cache(async (ArtistId: string) => {
   const suggestions = await getArtistSongs({ id: ArtistId });
   const response: GetArtistSongsResponse = await decodeHtmlEntitiesInJson(suggestions);
@@ -87,75 +82,138 @@ const createArtistSongs = cache(async (ArtistId: string) => {
   }));
 })
 
+function DownloadButton({ downloadUrl }: { downloadUrl: string }) {
+  const [downloading, setDownloading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
+  const handleDownload = useCallback(async () => {
+    setDownloading(true);
+    setProgress(0);
+
+    try {
+      const response = await fetch(downloadUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const reader = response.body?.getReader();
+      const contentLength = +(response.headers.get('Content-Length') || '0');
+      let receivedLength = 0;
+      const chunks = [];
+
+      while(true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          break;
+        }
+
+        chunks.push(value);
+        receivedLength += value.length;
+        setProgress(Math.round((receivedLength / contentLength) * 100));
+      }
+
+      const blob = new Blob(chunks);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = 'song.mp3';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast({
+        title: "Download complete",
+        description: "Your file has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast({
+        title: "Download failed",
+        description: "There was an error downloading your file. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloading(false);
+      setProgress(0);
+    }
+  }, [downloadUrl]);
+
+  return (
+    <div className="w-full">
+      {downloading ? (
+        <div className="w-full">
+          <Progress value={progress} className="w-[100px] mb-2" />
+          <p className="text-center text-sm">{progress}%</p>
+        </div>
+      ) : (
+        <Button onClick={handleDownload}>Download</Button>
+      )}
+    </div>
+  );
+}
 
 export default async function Page({ params }: { params: { id: string } }) {
-    const song = await fetchSongCached(params.id)
-    if (!song) {
-      notFound()
-    }
+  const song = await fetchSongCached(params.id)
+  if (!song) {
+    notFound()
+  }
 
-    const [suggestions, moreFromArtist] = await Promise.all([
-      createSongSuggestions(params.id),
-      createArtistSongs(song?.artists.primary?.[0].id || song?.artists.featured?.[0].id || song?.artists.all?.[0].id || '0000')
-    ]);
+  const [suggestions, moreFromArtist] = await Promise.all([
+    createSongSuggestions(params.id),
+    createArtistSongs(song?.artists.primary?.[0].id || song?.artists.featured?.[0].id || song?.artists.all?.[0].id || '0000')
+  ]);
 
+  function formatDurationSchema(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `PT${minutes}M${remainingSeconds}S`;
+  }
+  
+  function generateSchema(song: NonNullable<GetSongByIdResponse['data']>[0]) {
+    const siteUrl = siteConfig.siteURL;
+    const songUrl = `${siteUrl}/songs/${song.id}`;
+    const audioObjects = song.downloadUrl.map(download => ({
+      '@type': 'AudioObject',
+      '@id': `${song.id}_${download.quality}`,
+      url: download.url,
+      encodingFormat: 'audio/mpeg',
+      bitrate: download.quality,
+      duration: formatDurationSchema(song.duration),
+    }));
+  
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'MusicRecording',
+      '@id': songUrl,
+      name: song.name,
+      duration: formatDurationSchema(song.duration),
+      isrcCode: song.id,
+      datePublished: song.releaseDate || undefined,
+      genre: song.language + " " + song.type,
+      image: song.image[song.image.length - 1]?.url || placeholderImages.song,
+      url: songUrl,
+      inAlbum : {
+        '@type': 'MusicAlbum',
+        '@id': song.album.id,
+        name: song.album.name || 'Unknown Album',
+      },
+      byArtist: song.artists.all.map(artist => ({
+        '@type': 'MusicGroup',
+        '@id': artist.id,
+        name: artist.name,
+        image: artist.image[artist.image.length - 1]?.url || placeholderImages.artist,
+      })),
+      audio: audioObjects,
+    };
+  
+    return schema;
+  }
 
-    function formatDurationSchema(seconds: number): string {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      return `PT${minutes}M${remainingSeconds}S`;
-    }
-    
-    function generateSchema(song: NonNullable<GetSongByIdResponse['data']>[0]) {
-      const siteUrl = siteConfig.siteURL;
-      const songUrl = `${siteUrl}/songs/${song.id}`;
-      const audioObjects = song.downloadUrl.map(download => ({
-        '@type': 'AudioObject',
-        '@id': `${song.id}_${download.quality}`,
-        url: download.url,
-        encodingFormat: 'audio/mpeg',
-        bitrate: download.quality,
-        duration: formatDurationSchema(song.duration),
-      }));
-    
-      const schema = {
-        '@context': 'https://schema.org',
-        '@type': 'MusicRecording',
-        '@id': songUrl,
-        name: song.name,
-        duration: formatDurationSchema(song.duration),
-        isrcCode: song.id,
-        datePublished: song.releaseDate || undefined,
-        genre: song.language + " " + song.type,
-        image: song.image[song.image.length - 1]?.url || placeholderImages.song,
-        url: songUrl,
-        inAlbum : {
-          '@type': 'MusicAlbum',
-          '@id': song.album.id,
-          name: song.album.name || 'Unknown Album',
-        },
-        byArtist: song.artists.all.map(artist => ({
-          '@type': 'MusicGroup',
-          '@id': artist.id,
-          name: artist.name,
-          // url: `${siteUrl}/artist/${artist.id}`,
-          image: artist.image[artist.image.length - 1]?.url || placeholderImages.artist,
-        })),
-        audio: audioObjects,
-      };
-    
-      return schema;
-    }
+  const schema = generateSchema(song)
+  const artistProps = createArtistProps(song);
 
-
-    const schema = generateSchema(song)
-
-
-    const artistProps = createArtistProps(song);
-
-    return (
-   <>
+  return (
+    <>
       <main className='max-w-screen-xl mx-auto p-2 md:p-4'>
         <MainHero songData={song} />
 
@@ -213,7 +271,6 @@ export default async function Page({ params }: { params: { id: string } }) {
           </div>
         )}
 
-
         {song.lyrics && (
           <Card>
             <CardHeader>
@@ -227,15 +284,12 @@ export default async function Page({ params }: { params: { id: string } }) {
         )}
       </main>
       <script 
-       type="application/ld+json"
-       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
       />
-      </>
-    )
-
+    </>
+  )
 }
-
-
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const song = await fetchSongCached(params.id);
@@ -292,4 +346,4 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
       'og:audio': song.downloadUrl?.[4].url || '',
     },
   };
-}
+  }
