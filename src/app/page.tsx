@@ -78,6 +78,17 @@ export default async function Page() {
   const malayalamViralHits = await fetchSongList(Malayalam_Viral_Hits.url)
   const trendingData = await getModules('trending')
 
+  const playlists = [
+    { url: "https://www.jiosaavn.com/featured/english-viral-hits/pm49jiq,CNs_", name: "English Viral Hits" },
+    { url: "https://www.jiosaavn.com/featured/best-of-pop-english/oqKee-6aXESO0eMLZZxqsA__", name: "Best of Pop English" },
+    // { url: "https://www.jiosaavn.com/featured/most-searched-songs-english/xUOBWZUG6AgGSw2I1RxdhQ__", name: "Most Searched Songs - English" },
+  ];
+
+  // Fetch song lists for each playlist
+  const playlistSongLists = await Promise.all(
+    playlists.map(playlist => fetchSongList(playlist.url))
+  );
+
   return (
     <main className='p-4'>
       <div className="mb-8">
@@ -92,6 +103,14 @@ export default async function Page() {
         <Separator className="mb-2" />
         <TrendingSongs songs={trendingData} />
       </div>
+
+      {playlistSongLists.map((songs, index) => (
+        <React.Fragment key={index}>
+          <SongList HeadingName={playlists[index].name} songCards={songs} />
+          <Separator className='mb-2' />
+        </React.Fragment>
+      ))}
+
       <SongList HeadingName={"Latest Hot Hits"} songCards={trendingHotHits} />
       <Separator className='mb-2' />
 
