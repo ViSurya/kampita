@@ -197,7 +197,7 @@ const SongCard = memo(function SongCard({
             {imageLoading && (
               <Skeleton className={`absolute w-full h-full ${isCircular ? "rounded-full" : ""}`} />
             )}
-            <Image
+            <img
               src={imageError ? placeholderImage : imageUrl}
               alt={name}
               width={250}

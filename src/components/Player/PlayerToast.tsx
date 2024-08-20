@@ -206,7 +206,7 @@ const TrackInfo = React.memo(() => {
 
   return (
     <div className="flex items-center space-x-2">
-      <Image
+      <img
         src={currentTrack.image}
         alt={currentTrack.name}
         className="h-10 w-10 rounded-md"
@@ -265,7 +265,7 @@ const Queue = React.memo(() => {
               onClick={() => index !== 0 && playTrack(index - 1)}
             >
               <div className="flex items-center space-x-2 flex-grow min-w-0">
-                <Image width={50} height={50} src={track.image} alt={track.name} className="h-8 w-8 rounded flex-shrink-0" />
+                <img width={50} height={50} src={track.image} alt={track.name} className="h-8 w-8 rounded flex-shrink-0" />
                 <div className="flex-grow min-w-0">
                   <p className="font-medium text-sm truncate">{track.name}</p>
                   <p className="text-xs text-gray-500 truncate">{track.artist}</p>
@@ -375,7 +375,7 @@ export function Player() {
               <X className="h-6 w-6" />
             </Button>
             {currentTrack && (
-              <Image
+              <img
                 src={currentTrack.image}
                 alt={currentTrack.name}
                 width={500}

@@ -159,13 +159,13 @@ function MainHero({ songData: song }: { songData: songType }) {
               {imageLoading && (
                 <Skeleton className={'relative w-full h-full'} />
               )}
-              <Image
+              <img
                 alt={song.name}
                 src={song.image?.[2].url || placeholderImages.song}
                 width={390}
                 height={390}
                 className={`rounded-lg mx-auto h-min  md:size-96 ${imageLoading ? 'opacity-0' : ''}`}
-                priority={true}
+                // priority={true}
                 onLoad={HandleImageLoad}
               />
             </>

@@ -195,7 +195,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
       <CardContent className="flex items-center p-2">
         <div className="relative mr-3 flex-shrink-0">
           <Link prefetch={false} href={`${directoryURLs.songs}/${song.id}`} className="block">
-            <Image
+            <img
               src={song.image?.[0]?.link || placeholderImages.song}
               alt={song.name}
               width={40}
