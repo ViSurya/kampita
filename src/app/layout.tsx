@@ -16,15 +16,15 @@ const globalFont = Signika_Negative({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | PagalWorld",
-    default: "PagalWorld - Download or Stream Millions of Songs for Free",
+    template: "%s | Kampita",
+    default: "Kampita - Download or Stream Millions of Songs for Free",
   },
-  description: "PagalWorld offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from PagalWorld.",
+  description: "Kampita offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from Kampita.",
   keywords: [
-    "PagalWorld",
+    "Kampita",
     "Music Downloads",
     "Free Song Download",
-    "PagalWorld Song Download",
+    "Kampita Song Download",
     "MP3 Download",
     "Latest Music",
     "Bollywood Songs",
@@ -33,11 +33,11 @@ export const metadata: Metadata = {
     "Music Streaming",
     "Top Songs",
     "Free MP3 Song Download",
-    "PagalWorld Music"
+    "Kampita Music"
   ],
   openGraph: {
-    title: "PagalWorld - Download or Stream Millions of Songs for Free",
-    description: "PagalWorld offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from PagalWorld.",
+    title: "Kampita - Download or Stream Millions of Songs for Free",
+    description: "Kampita offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from Kampita.",
     url: "https://pagal-world.site",
     type: "website",
     // images: [
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     //     url: "https://pagal-world.site/images/og-image.jpg",
     //     width: 800,
     //     height: 600,
-    //     alt: "PagalWorld"
+    //     alt: "Kampita"
     //   }
     // ]
   },
@@ -55,8 +55,8 @@ const siteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "url": "https://pagal-world.site",
-  "name": "PagalWorld",
-  "description": "PagalWorld offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from PagalWorld.",
+  "name": "Kampita",
+  "description": "Kampita offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from Kampita.",
   "potentialAction": {
     "@type": "SearchAction",
     "target": "https://pagal-world.site/search?q={search_term_string}",

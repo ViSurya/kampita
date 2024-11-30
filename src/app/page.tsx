@@ -92,9 +92,9 @@ export default async function Page() {
   return (
     <main className='p-4'>
       <div className="mb-8">
-        <h1 className='text-3xl font-bold text-center'>Welcome to PagalWorld :)</h1>
+        <h1 className='text-3xl font-bold text-center'>Welcome to Kampita :)</h1>
         <p className='leading-6 text-center mt-2'>
-          Download or stream millions of songs for free on PagalWorld.
+          Download or stream millions of songs for free on Kampita.
         </p>
       </div>
 

@@ -30,33 +30,33 @@ type PlaceholderImages = {
 };
 
 const siteConfig: SiteConfiguration = {
-    siteName: 'PagalWorld',
-    tagLine: 'PagalWorld - Your Ultimate Music Download Destination',
+    siteName: 'Kampita',
+    tagLine: 'Kampita - Your Ultimate Music Download Destination',
     siteURL: 'https://pagal-world.site',
     siteOwner: 'Vishal Kalaria',
-    siteDescription: 'PagalWorld offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from PagalWorld.',
+    siteDescription: 'Kampita offers a vast collection of music downloads and streaming. Enjoy high-quality songs, albums, and playlists at your fingertips. Download your favorite tracks from Kampita.',
     contactEmail: 'support@pagal-world.site',
-    copyright: '© 2024 PagalWorld. All rights reserved.',
+    copyright: '© 2024 Kampita. All rights reserved.',
     socialLinks: {
         x: {
-            userName: 'PagalWorldMusic',
-            url: 'https://x.com/PagalWorldMusic'
+            userName: 'KampitaMusic',
+            url: 'https://x.com/KampitaMusic'
         },
         facebook: {
-            userName: 'PagalWorldMusic',
-            url: 'https://www.facebook.com/PagalWorldMusic'
+            userName: 'KampitaMusic',
+            url: 'https://www.facebook.com/KampitaMusic'
         },
         instagram: {
-            userName: 'PagalWorldMusic',
-            url: 'https://www.instagram.com/PagalWorldMusic'
+            userName: 'KampitaMusic',
+            url: 'https://www.instagram.com/KampitaMusic'
         },
         youtube: {
-            userName: 'PagalWorldMusic',
-            url: 'https://www.youtube.com/PagalWorldMusic'
+            userName: 'KampitaMusic',
+            url: 'https://www.youtube.com/KampitaMusic'
         },
         linkedin: {
-            userName: 'PagalWorldMusic',
-            url: 'https://www.linkedin.com/company/PagalWorldMusic'
+            userName: 'KampitaMusic',
+            url: 'https://www.linkedin.com/company/KampitaMusic'
         }
     }
 };
